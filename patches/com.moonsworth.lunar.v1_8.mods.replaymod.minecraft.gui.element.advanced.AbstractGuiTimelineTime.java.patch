@@ -1,0 +1,28 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/element/advanced/AbstractGuiTimelineTime.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/element/advanced/AbstractGuiTimelineTime.java
+@@ -28,5 +28,8 @@
+ import static com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.element.advanced.AbstractGuiTimeline.BORDER_RIGHT;
+ 
++import com.moonsworth.lunar.client.Lunar;
++import com.moonsworth.lunar.client.management.managers.Fonts;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.GuiRenderer;
++import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.OffsetGuiRenderer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.RenderInfo;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.container.GuiContainer;
+@@ -79,5 +82,15 @@
+         int stringWidth = MCVer.getFontRenderer().getStringWidth(str);
+         positionX = Math.max(stringWidth / 2, Math.min(size.getWidth() - stringWidth / 2, positionX));
+-        renderer.drawCenteredString(positionX, 0, Colors.WHITE, str, true);
++        if (Lunar.getClient().getMods().getReplayMod().getLunarUi().get()) {
++            float offsetPositionX = 0F;
++            float offsetPositionY = 0F;
++            if (renderer instanceof OffsetGuiRenderer) {
++                offsetPositionX += renderer.getOpenGlOffset().getX();
++                offsetPositionY += renderer.getOpenGlOffset().getY();
++            }
++            Fonts.getRoboto13Medium().drawCenteredStringWithShadow(str, positionX + offsetPositionX, offsetPositionY, 0xFFFFFFFF);
++        } else {
++            renderer.drawCenteredString(positionX, 0, Colors.WHITE, str, true);
++        }
+     }
+ 

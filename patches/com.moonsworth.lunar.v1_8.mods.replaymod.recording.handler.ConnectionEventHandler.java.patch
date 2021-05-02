@@ -1,0 +1,65 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/recording/handler/ConnectionEventHandler.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/recording/handler/ConnectionEventHandler.java
+@@ -1,9 +1,10 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.recording.handler;
+ 
+-import com.replaymod.core.utils.ModCompat;
+-import com.replaymod.recording.mixin.NetworkManagerAccessor;
++import com.moonsworth.lunar.client.Lunar;
++import com.moonsworth.lunar.client.util.Ref;
+ import com.replaymod.replaystudio.replay.ReplayFile;
+ import com.replaymod.replaystudio.replay.ReplayMetaData;
+ import io.netty.channel.Channel;
++import lombok.Getter;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.client.multiplayer.ServerData;
+@@ -45,5 +46,6 @@
+     private PacketListener packetListener;
+     private GuiRecordingOverlay guiOverlay;
+-    private GuiRecordingControls guiControls;
++    @Getter private GuiRecordingControls guiControls;
++    @Getter private boolean local;
+ 
+     public ConnectionEventHandler(Logger logger, ReplayMod core) {
+@@ -53,6 +55,7 @@
+ 
+     public void onConnectedToServerEvent(NetworkManager networkManager) {
++        System.out.println("onConnectedToServerEvent");
+         try {
+-            boolean local = networkManager.isLocalChannel();
++            local = networkManager.isLocalChannel();
+             if (local) {
+                 if (mc.getIntegratedServer().getEntityWorld().getWorldType() == WorldType.DEBUG_WORLD) {
+@@ -98,9 +101,13 @@
+             }
+ 
++            if (!Ref.client().getMods().getReplayMod().isEnabled()) {
++                autoStart = false;
++            }
++
+             String name = sdf.format(Calendar.getInstance().getTime());
+             Path outputPath = core.getRecordingFolder().resolve(Utils.replayNameToFileName(name));
+             ReplayFile replayFile = core.openReplay(outputPath);
+ 
+-            replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
++//            replayFile.writeModInfo(ModCompat.getInstalledNetworkMods());
+ 
+             ReplayMetaData metaData = new ReplayMetaData();
+@@ -112,5 +119,5 @@
+             metaData.setMcVersion(ReplayMod.getMinecraftVersion());
+             packetListener = new PacketListener(core, outputPath, replayFile, metaData);
+-            Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
++            Channel channel = networkManager.channel;
+             channel.pipeline().addBefore(packetHandlerKey, "replay_recorder", packetListener);
+ 
+@@ -125,4 +132,5 @@
+ 
+             if (autoStart) {
++                packetListener.setRecordedThisSession(true);
+                 core.printInfoToChat("replaymod.chat.recordingstarted");
+             } else {
+@@ -150,3 +158,4 @@
+         return packetListener;
+     }
++
+ }

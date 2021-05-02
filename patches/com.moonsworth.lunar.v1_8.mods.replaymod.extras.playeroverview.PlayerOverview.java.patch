@@ -1,0 +1,9 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/extras/playeroverview/PlayerOverview.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/extras/playeroverview/PlayerOverview.java
+@@ -99,5 +99,5 @@
+     public void oRenderHand(EventRenderHand event) {
+         if (shouldHideHand()) {
+-            event.setCanceled(true);
++            event.setCancelled(true);
+         }
+     }

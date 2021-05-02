@@ -1,0 +1,9 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/simplepathing/preview/PathPreviewRenderer.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/simplepathing/preview/PathPreviewRenderer.java
+@@ -34,5 +34,5 @@
+ 
+ public class PathPreviewRenderer extends EventRegistrations {
+-    private static final ResourceLocation CAMERA_HEAD = new ResourceLocation("replaymod", "camera_head.png");
++    private static final ResourceLocation CAMERA_HEAD = new ResourceLocation("lunar", "replaymod/camera_head.png");
+     private static final Minecraft mc = MCVer.getMinecraft();
+ 

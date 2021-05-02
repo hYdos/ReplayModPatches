@@ -1,0 +1,11 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/editor/handler/GuiHandler.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/editor/handler/GuiHandler.java
+@@ -19,6 +19,6 @@
+ public class GuiHandler extends EventRegistrations {
+     @Listen
+-    public void injectIntoReplayViewer(EventGuiScreen.InitGuiEvent.Post event) {
+-        net.minecraft.client.gui.GuiScreen vanillaGuiScreen = getGui(event);
++    public void injectIntoReplayViewer(EventGuiScreen event) {
++        net.minecraft.client.gui.GuiScreen vanillaGuiScreen = (net.minecraft.client.gui.GuiScreen) event.getGuiScreen();
+         AbstractGuiScreen guiScreen = GuiScreen.from(vanillaGuiScreen);
+         if (!(guiScreen instanceof GuiReplayViewer)) {

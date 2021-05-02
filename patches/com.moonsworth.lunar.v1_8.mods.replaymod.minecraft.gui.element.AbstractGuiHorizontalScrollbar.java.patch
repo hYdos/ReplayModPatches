@@ -1,0 +1,22 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/element/AbstractGuiHorizontalScrollbar.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/element/AbstractGuiHorizontalScrollbar.java
+@@ -25,4 +25,6 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.element;
+ 
++import com.moonsworth.lunar.client.Lunar;
++import com.moonsworth.lunar.client.feature.mod.replaymod.ReplayMod;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.GuiRenderer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.OffsetGuiRenderer;
+@@ -32,4 +34,5 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.function.Draggable;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.utils.Utils;
++import net.minecraft.util.ResourceLocation;
+ import org.lwjgl.util.Dimension;
+ import org.lwjgl.util.Point;
+@@ -148,5 +151,5 @@
+         int height = size.getHeight();
+ 
+-        renderer.bindTexture(TEXTURE);
++        renderer.bindTexture(Lunar.getClient().getMods().getReplayMod().getLunarUi().get() ? (ResourceLocation) ReplayMod.LUNAR_UI : TEXTURE);
+ 
+         // Draw background

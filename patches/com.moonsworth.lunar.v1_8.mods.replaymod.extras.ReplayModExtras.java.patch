@@ -1,0 +1,10 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/extras/ReplayModExtras.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/extras/ReplayModExtras.java
+@@ -21,6 +21,5 @@
+ 
+     private static final List<Class<? extends Extra>> builtin = Arrays.asList(AdvancedScreenshots.class,
+-            PlayerOverview.class, YoutubeUpload.class, FullBrightness.class, QuickMode.class, HotkeyButtons.class,
+-            OpenEyeExtra.class);
++            PlayerOverview.class, YoutubeUpload.class, QuickMode.class, HotkeyButtons.class);
+ 
+     private final Map<Class<? extends Extra>, Extra> instances = new HashMap<>();

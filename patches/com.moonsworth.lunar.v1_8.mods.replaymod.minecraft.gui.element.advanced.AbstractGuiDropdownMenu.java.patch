@@ -1,0 +1,125 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/element/advanced/AbstractGuiDropdownMenu.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/element/advanced/AbstractGuiDropdownMenu.java
+@@ -25,4 +25,9 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.element.advanced;
+ 
++import com.moonsworth.lunar.bridge.BridgeManager;
++import com.moonsworth.lunar.bridge.util.ResourceLocationBridge;
++import com.moonsworth.lunar.client.Lunar;
++import com.moonsworth.lunar.client.gui.framework.LCUI;
++import com.moonsworth.lunar.client.management.managers.Fonts;
+ import net.minecraft.client.gui.FontRenderer;
+ import org.lwjgl.util.Color;
+@@ -45,10 +50,12 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.utils.Consumer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.versions.MCVer;
+-import java.util.Collection;
+-import java.util.Collections;
+-import java.util.LinkedHashMap;
+-import java.util.Map;
++
++import java.util.*;
+ import java.util.function.Function;
+ 
++import static net.minecraft.client.renderer.GlStateManager.*;
++import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
++import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
++
+ public abstract class AbstractGuiDropdownMenu<V, T extends AbstractGuiDropdownMenu<V, T>>
+         extends
+@@ -73,4 +80,6 @@
+     private Function<V, String> toString = Object::toString;
+ 
++    private final ResourceLocationBridge downArrowIcon = BridgeManager.getImplementation().initResourceLocation("lunar", "icons/down-arrow-16x16.png");
++
+     public AbstractGuiDropdownMenu() {
+     }
+@@ -114,24 +123,50 @@
+         super.draw(renderer, size, renderInfo);
+         FontRenderer fontRenderer = MCVer.getFontRenderer();
++
++
+         if (renderInfo.layer == 0) {
+-            int width = size.getWidth();
+-            int height = size.getHeight();
++            if (Lunar.getClient().getMods().getReplayMod().getLunarUi().get()) {
++                LCUI.btn(renderer.getOpenGlOffset().getX(), renderer.getOpenGlOffset().getY(), size.getWidth(), size.getHeight(), 4F, 0x99000000);
+ 
+-            // Draw box
+-            renderer.drawRect(0, 0, width, height, OUTLINE_COLOR);
+-            renderer.drawRect(1, 1, width - 2, height - 2, ReadableColor.BLACK);
+-            renderer.drawRect(width - height, 0, 1, height, OUTLINE_COLOR);
++                String s = toString.apply(getSelectedValue()).toUpperCase();
++                float strWidth = Fonts.getRoboto14Bold().getStringWidth(s);
+ 
+-            // Draw triangle
+-            int base = height - 6;
+-            int tHeight = base / 2;
+-            int x = width - 3 - base / 2;
+-            int y = height / 2 - 2;
+-            for (int layer = tHeight; layer > 0; layer--) {
+-                renderer.drawRect(x - layer, y + (tHeight - layer), layer * 2 - 1, 1, OUTLINE_COLOR);
+-            }
++                if (strWidth >= size.getWidth() - 40F) {
++                    List<String> wrapped = Fonts.getRoboto10Bold().wrapWords(s, size.getWidth() - 40F);
++                    float height = 0F;
++                    for (String s1 : wrapped) {
++                        Fonts.getRoboto10Bold().drawCenteredStringWithShadow(s1, renderer.getOpenGlOffset().getX() + size.getWidth() / 2F, renderer.getOpenGlOffset().getY() + 4 + height, 0xFFFFFFFF);
++                        height += 6F;
++                    }
++                } else {
++                    Fonts.getRoboto14Bold().drawCenteredStringWithShadow(s, renderer.getOpenGlOffset().getX() + size.getWidth() / 2F, renderer.getOpenGlOffset().getY() + (size.getHeight() - 8) / 2F, 0xFFFFFFFF);
++                }
+ 
+-            renderer.drawString(3, height / 2 - fontRenderer.FONT_HEIGHT / 2, ReadableColor.WHITE,
+-                    toString.apply(getSelectedValue()));
++                LCUI.drawTexture(downArrowIcon, 4F, renderer.getOpenGlOffset().getX() + size.getWidth() - 12F, renderer.getOpenGlOffset().getY() + 6F);
++
++                enableBlend();
++                tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
++                blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
++            } else {
++                int width = size.getWidth();
++                int height = size.getHeight();
++
++                // Draw box
++                renderer.drawRect(0, 0, width, height, OUTLINE_COLOR);
++                renderer.drawRect(1, 1, width - 2, height - 2, ReadableColor.BLACK);
++                renderer.drawRect(width - height, 0, 1, height, OUTLINE_COLOR);
++
++                // Draw triangle
++                int base = height - 6;
++                int tHeight = base / 2;
++                int x = width - 3 - base / 2;
++                int y = height / 2 - 2;
++                for (int layer = tHeight; layer > 0; layer--) {
++                    renderer.drawRect(x - layer, y + (tHeight - layer), layer * 2 - 1, 1, OUTLINE_COLOR);
++                }
++
++                renderer.drawString(3, height / 2 - fontRenderer.FONT_HEIGHT / 2, ReadableColor.WHITE,
++                        toString.apply(getSelectedValue()));
++            }
+         } else if (renderInfo.layer == 1) {
+             ReadablePoint offsetPoint = new Point(0, size.getHeight());
+@@ -284,7 +319,18 @@
+             int height = size.getHeight();
+ 
+-            renderer.drawRect(0, 0, width, height, OUTLINE_COLOR);
+-            renderer.drawRect(1, 0, width - 2, height - 1, ReadableColor.BLACK);
+-            renderer.drawString(3, 2, ReadableColor.WHITE, toString.apply(value));
++            if (Lunar.getClient().getMods().getReplayMod().getLunarUi().get()) {
++
++                LCUI.btn(renderer.getOpenGlOffset().getX(), renderer.getOpenGlOffset().getY(), size.getWidth(), size.getHeight(), 4F, 0xDF000000);
++
++                Fonts.getRoboto12Bold().drawStringWithShadow(toString.apply(value), renderer.getOpenGlOffset().getX() + 3F, renderer.getOpenGlOffset().getY() + 3F, 0xFFFFFFFF);
++
++                enableBlend();
++                tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
++                blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
++            } else {
++                renderer.drawRect(0, 0, width, height, OUTLINE_COLOR);
++                renderer.drawRect(1, 0, width - 2, height - 1, ReadableColor.BLACK);
++                renderer.drawString(3, 2, ReadableColor.WHITE, toString.apply(value));
++            }
+         }
+ 

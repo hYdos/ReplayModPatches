@@ -1,0 +1,87 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/element/AbstractGuiSlider.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/element/AbstractGuiSlider.java
+@@ -25,5 +25,11 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.element;
+ 
++import com.moonsworth.lunar.bridge.BridgeManager;
++import com.moonsworth.lunar.client.Lunar;
++import com.moonsworth.lunar.client.gui.framework.LCUI;
++import com.moonsworth.lunar.client.gui.framework.font.CFontRenderer;
++import com.moonsworth.lunar.client.management.managers.Fonts;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.GuiRenderer;
++import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.OffsetGuiRenderer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.RenderInfo;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.container.GuiContainer;
+@@ -36,4 +42,8 @@
+ import org.lwjgl.util.ReadablePoint;
+ 
++import static net.minecraft.client.renderer.GlStateManager.*;
++import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
++import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
++
+ // TODO: Currently assumes a height of 20
+ public abstract class AbstractGuiSlider<T extends AbstractGuiSlider<T>> extends AbstractGuiElement<T>
+@@ -117,23 +127,48 @@
+         int height = size.getHeight();
+ 
+-        renderer.bindTexture(GuiButton.WIDGETS_TEXTURE);
++        int sliderX = (width - 8) * value / steps;
++        boolean isLunarUI = Lunar.getClient().getMods().getReplayMod().getLunarUi().get();
+ 
+-        // Draw background
+-        renderer.drawTexturedRect(0, 0, 0, 46, width / 2, height);
+-        renderer.drawTexturedRect(width / 2, 0, 200 - width / 2, 46, width / 2, height);
++        if (isLunarUI) {
++            float offsetX = 0F, offsetY = 0F;
++            if (renderer instanceof OffsetGuiRenderer) {
++                offsetX = renderer.getOpenGlOffset().getX();
++                offsetY = renderer.getOpenGlOffset().getY();
++            }
+ 
+-        // Draw slider
+-        int sliderX = (width - 8) * value / steps;
+-        renderer.drawTexturedRect(sliderX, 0, 0, 66, 4, 20);
+-        renderer.drawTexturedRect(sliderX + 4, 0, 196, 66, 4, 20);
++            // Draw background
++            LCUI.btn(offsetX, offsetY, size.getWidth(), size.getHeight(), 4F, 0x99000000);
+ 
+-        // Draw text
+-        int color = 0xe0e0e0;
+-        if (!isEnabled()) {
+-            color = 0xa0a0a0;
+-        } else if (isMouseHovering(new Point(renderInfo.mouseX, renderInfo.mouseY))) {
+-            color = 0xffffa0;
++            Fonts.getRoboto12Bold().drawCenteredStringWithShadow(text, offsetX + width / 2F, offsetY + 1F, 0xFFFFFFFF);
++
++            // Draw slider
++            LCUI.rect(offsetX + 3f, offsetY + height - 7.5F, width - 6F, 3F, 0xAF1A1B1B);
++            LCUI.drawCircle(offsetX + sliderX + 4, offsetY + height - 6, 4F, 0xFF4f94fc);
++            BridgeManager.getGlStateManagerBridge().bridge$color(1F, 1F, 1F, 1F);
++
++
++            enableBlend();
++            tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
++            blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
++        } else {
++            renderer.bindTexture(GuiButton.WIDGETS_TEXTURE);
++
++            // Draw background
++            renderer.drawTexturedRect(0, 0, 0, 46, width / 2, height);
++            renderer.drawTexturedRect(width / 2, 0, 200 - width / 2, 46, width / 2, height);
++
++            // Draw slider
++            renderer.drawTexturedRect(sliderX, 0, 0, 66, 4, 20);
++            renderer.drawTexturedRect(sliderX + 4, 0, 196, 66, 4, 20);
++
++            // Draw text
++            int color = 0xe0e0e0;
++            if (!isEnabled()) {
++                color = 0xa0a0a0;
++            } else if (isMouseHovering(new Point(renderInfo.mouseX, renderInfo.mouseY))) {
++                color = 0xffffa0;
++            }
++            renderer.drawCenteredString(width / 2, height / 2 - 4, color, text);
+         }
+-        renderer.drawCenteredString(width / 2, height / 2 - 4, color, text);
+     }
+ 

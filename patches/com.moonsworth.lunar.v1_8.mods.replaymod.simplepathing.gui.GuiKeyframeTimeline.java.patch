@@ -1,0 +1,9 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/simplepathing/gui/GuiKeyframeTimeline.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/simplepathing/gui/GuiKeyframeTimeline.java
+@@ -1,4 +1,6 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.simplepathing.gui;
+ 
++import com.moonsworth.lunar.v1_8.mods.replaymod.pathing.properties.CameraProperties;
++import com.moonsworth.lunar.v1_8.mods.replaymod.replay.gui.overlay.GuiMarkerTimeline;
+ import com.replaymod.replaystudio.pathing.change.Change;
+ import com.replaymod.replaystudio.pathing.path.Keyframe;

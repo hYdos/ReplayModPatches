@@ -1,0 +1,38 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/simplepathing/gui/GuiPathing.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/simplepathing/gui/GuiPathing.java
+@@ -55,5 +55,4 @@
+ import org.lwjgl.util.ReadablePoint;
+ import org.lwjgl.util.WritablePoint;
+-import net.minecraftforge.fml.common.Loader;
+ 
+ import javax.annotation.Nonnull;
+@@ -156,5 +155,5 @@
+         public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
+             if (player.isActive()) {
+-                setCursorPosition((int) player.getTimePassed()).ensureCursorVisibleWithPadding();
++                setCursorPosition((int) player.getTimePassed());//.ensureCursorVisibleWithPadding();
+             }
+             super.draw(renderer, size, renderInfo);
+@@ -337,5 +336,5 @@
+         });
+ 
+-        timeKeyframeButton.setSpriteUV(new ReadablePoint() {
++            timeKeyframeButton.setSpriteUV(new ReadablePoint() {
+             @Override
+             public int getX() {
+@@ -471,5 +470,5 @@
+                     int cursorPassed = (int) (timePassed / speed);
+                     // Move cursor to new position
+-                    timeline.setCursorPosition(keyframeCursor + cursorPassed).ensureCursorVisibleWithPadding();
++                    timeline.setCursorPosition(keyframeCursor + cursorPassed);//TODO.ensureCursorVisibleWithPadding();
+                     // Deselect keyframe to allow the user to add a new one right away
+                     mod.setSelected(null, 0);
+@@ -630,4 +629,8 @@
+         }
+ 
++        if (!ReplayMod.instance.getSettingsRegistry().get(Setting.PATH_PREVIEW)) {
++            ReplayMod.instance.printWarningToChat("Keyframe set although path preview is currently hidden.");
++        }
++
+         switch (path) {
+             case TIME :

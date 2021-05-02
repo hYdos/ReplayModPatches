@@ -1,0 +1,92 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/element/AbstractGuiButton.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/element/AbstractGuiButton.java
+@@ -25,4 +25,11 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.element;
+ 
++import com.moonsworth.lunar.bridge.BridgeManager;
++import com.moonsworth.lunar.client.Lunar;
++import com.moonsworth.lunar.client.feature.mod.replaymod.ReplayMod;
++import com.moonsworth.lunar.client.gui.framework.LCUI;
++import com.moonsworth.lunar.client.management.managers.Fonts;
++import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.OffsetGuiRenderer;
++import lombok.Setter;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.client.gui.FontRenderer;
+@@ -61,4 +68,10 @@
+     private ReadableDimension spriteSize;
+ 
++    /**
++     * When true will use the vanilla Minecraft widget texture as a background
++     * instead of the Lunar UI regardless of the setting
++     */
++    @Setter private boolean defaultWidgetTexture;
++
+     public AbstractGuiButton() {
+     }
+@@ -74,4 +87,6 @@
+         color(1, 1, 1, 1);
+ 
++        boolean isLunarUI = !defaultWidgetTexture && Lunar.getClient().getMods().getReplayMod().getLunarUi().get();
++
+         byte texture = 1;
+         int color = 0xe0e0e0;
+@@ -84,8 +99,4 @@
+         }
+ 
+-        enableBlend();
+-        tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+-        blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+-
+         int textureY = 46 + texture * 20;
+         int halfWidth = size.getWidth() / 2;
+@@ -94,13 +105,32 @@
+         int secondHalfHeight = size.getHeight() - halfHeight;
+ 
+-        renderer.bindTexture(WIDGETS_TEXTURE);
+-        renderer.drawTexturedRect(0, 0, 0, textureY, halfWidth, halfHeight);
+-        renderer.drawTexturedRect(0, halfHeight, 0, textureY + 20 - secondHalfHeight, halfWidth, secondHalfHeight);
+-        renderer.drawTexturedRect(halfWidth, 0, 200 - secondHalfWidth, textureY, secondHalfWidth, halfHeight);
+-        renderer.drawTexturedRect(halfWidth, halfHeight, 200 - secondHalfWidth, textureY + 20 - secondHalfHeight,
+-                secondHalfWidth, secondHalfHeight);
++        float offsetPositionX = 0F;
++        float offsetPositionY = 0F;
++        if (renderer instanceof OffsetGuiRenderer) {
++            offsetPositionX += renderer.getOpenGlOffset().getX();
++            offsetPositionY += renderer.getOpenGlOffset().getY();
++        }
+ 
++        if (isLunarUI) {
++            LCUI.btn(offsetPositionX, offsetPositionY, size.getWidth(), size.getHeight(), 4F, 0x99000000);
++
++            enableBlend();
++            tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
++            blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
++        } else {
++            enableBlend();
++            tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
++            blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
++
++            renderer.bindTexture(WIDGETS_TEXTURE);
++            renderer.drawTexturedRect(0, 0, 0, textureY, halfWidth, halfHeight);
++            renderer.drawTexturedRect(0, halfHeight, 0, textureY + 20 - secondHalfHeight, halfWidth, secondHalfHeight);
++            renderer.drawTexturedRect(halfWidth, 0, 200 - secondHalfWidth, textureY, secondHalfWidth, halfHeight);
++            renderer.drawTexturedRect(halfWidth, halfHeight, 200 - secondHalfWidth, textureY + 20 - secondHalfHeight,
++                    secondHalfWidth, secondHalfHeight);
++        }
++
+         if (this.texture != null) {
+-            renderer.bindTexture(this.texture);
++            renderer.bindTexture(isLunarUI ? (ResourceLocation) ReplayMod.LUNAR_RM_UI : this.texture);
+             if (spriteUV != null && textureSize != null) {
+                 ReadableDimension spriteSize = this.spriteSize != null ? this.spriteSize : getMinSize();
+@@ -113,5 +143,9 @@
+ 
+         if (label != null) {
+-            renderer.drawCenteredString(halfWidth, (size.getHeight() - 8) / 2, color, label, true);
++            if (isLunarUI) {
++                Fonts.getRoboto14Bold().drawCenteredStringWithShadow(label.toUpperCase(), offsetPositionX + halfWidth, offsetPositionY + (size.getHeight() - 8) / 2F, color);
++            } else {
++                renderer.drawCenteredString(halfWidth, (size.getHeight() - 8) / 2, color, label, true);
++            }
+         }
+     }

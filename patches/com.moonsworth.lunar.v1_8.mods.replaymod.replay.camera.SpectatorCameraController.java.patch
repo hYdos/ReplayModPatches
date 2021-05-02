@@ -1,0 +1,19 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/replay/camera/SpectatorCameraController.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/replay/camera/SpectatorCameraController.java
+@@ -1,5 +1,4 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.replay.camera;
+ 
+-import com.replaymod.replay.mixin.EntityPlayerAccessor;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.client.settings.KeyBinding;
+@@ -50,8 +49,6 @@
+                 EntityPlayer viewPlayer = (EntityPlayer) view;
+                 camera.inventory = viewPlayer.inventory;
+-                EntityPlayerAccessor cameraA = (EntityPlayerAccessor) camera;
+-                EntityPlayerAccessor viewPlayerA = (EntityPlayerAccessor) viewPlayer;
+-                cameraA.setItemInUse(viewPlayerA.getItemInUse());
+-                cameraA.setItemInUseCount(viewPlayerA.getItemInUseCount());
++                camera.itemInUse = viewPlayer.itemInUse;
++                camera.itemInUseCount = viewPlayer.itemInUseCount;
+             }
+         }

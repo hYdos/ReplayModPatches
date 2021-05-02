@@ -1,0 +1,18 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/extras/youtube/GuiYoutubeUpload.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/extras/youtube/GuiYoutubeUpload.java
+@@ -25,7 +25,7 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.versions.Image;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.render.RenderSettings;
+-import de.johni0702.minecraft.gui.element.*;
+ import joptsimple.internal.Strings;
+ import net.minecraft.client.resources.I18n;
++import net.minecraft.util.ResourceLocation;
+ import org.apache.commons.io.IOUtils;
+ 
+@@ -151,5 +151,5 @@
+     }).setSize(200, 20).setI18nLabel("replaymod.gui.videothumbnail");
+ 
+-    public final GuiImage thumbnail = new GuiImage().setSize(200, 112).setTexture(Utils.DEFAULT_THUMBNAIL);
++    public final GuiImage thumbnail = new GuiImage().setSize(200, 112).setTexture(new ResourceLocation("lunar", "replaymod/logo.jpg"));
+ 
+     public final GuiButton uploadButton = new GuiButton(this).setSize(98, 20);

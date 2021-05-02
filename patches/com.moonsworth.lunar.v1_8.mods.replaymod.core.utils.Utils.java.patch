@@ -1,0 +1,74 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/core/utils/Utils.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/core/utils/Utils.java
+@@ -7,4 +7,5 @@
+ import com.google.common.util.concurrent.Futures;
+ import com.google.common.util.concurrent.ListenableFuture;
++import com.moonsworth.lunar.client.Lunar;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.ReplayMod;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.GuiRenderer;
+@@ -76,5 +77,5 @@
+         Image thumbnail;
+         try {
+-            thumbnail = Image.read(getResourceAsStream("/default_thumb.jpg"));
++            thumbnail = Image.read(getResourceAsStream("/assets/lunar/replaymod/default_thumb.jpg"));
+         } catch (Exception e) {
+             thumbnail = new Image(1, 1);
+@@ -91,34 +92,34 @@
+      * @see #SSL_SOCKET_FACTORY
+      */
+-    public static final SSLContext SSL_CONTEXT;
++    public static final SSLContext SSL_CONTEXT = null;
+ 
+     /**
+      * @see #SSL_CONTEXT
+      */
+-    public static final SSLSocketFactory SSL_SOCKET_FACTORY;
++    public static final SSLSocketFactory SSL_SOCKET_FACTORY = null;
+ 
+-    static {
+-        // Largely from https://community.letsencrypt.org/t/134/37
+-        try (InputStream in = getResourceAsStream("/dst_root_ca_x3.pem")) {
+-            Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(in);
++//    static {
++//        // Largely from https://community.letsencrypt.org/t/134/37
++//        try (InputStream in = getResourceAsStream("/dst_root_ca_x3.pem")) {
++//            Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(in);
++//
++//            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
++//            keyStore.load(null, null);
++//            keyStore.setCertificateEntry("1", certificate);
++//
++//            TrustManagerFactory trustManagerFactory = TrustManagerFactory
++//                    .getInstance(TrustManagerFactory.getDefaultAlgorithm());
++//            trustManagerFactory.init(keyStore);
++//
++//            SSLContext ctx = SSLContext.getInstance("TLS");
++//            ctx.init(null, trustManagerFactory.getTrustManagers(), null);
++//            SSL_CONTEXT = ctx;
++//            SSL_SOCKET_FACTORY = ctx.getSocketFactory();
++//        } catch (IOException | CertificateException | KeyStoreException | NoSuchAlgorithmException
++//                | KeyManagementException e) {
++//            throw new RuntimeException(e);
++//        }
++//    }
+ 
+-            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+-            keyStore.load(null, null);
+-            keyStore.setCertificateEntry("1", certificate);
+-
+-            TrustManagerFactory trustManagerFactory = TrustManagerFactory
+-                    .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+-            trustManagerFactory.init(keyStore);
+-
+-            SSLContext ctx = SSLContext.getInstance("TLS");
+-            ctx.init(null, trustManagerFactory.getTrustManagers(), null);
+-            SSL_CONTEXT = ctx;
+-            SSL_SOCKET_FACTORY = ctx.getSocketFactory();
+-        } catch (IOException | CertificateException | KeyStoreException | NoSuchAlgorithmException
+-                | KeyManagementException e) {
+-            throw new RuntimeException(e);
+-        }
+-    }
+-
+     public static String convertSecondsToShortString(int seconds) {
+         int hours = seconds / (60 * 60);

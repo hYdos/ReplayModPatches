@@ -1,0 +1,87 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/container/AbstractGuiOverlay.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/container/AbstractGuiOverlay.java
+@@ -26,6 +26,8 @@
+ 
+ import com.moonsworth.lunar.client.event.annotation.Listen;
++import com.moonsworth.lunar.client.event.impl.hud.Event2D;
++import com.moonsworth.lunar.client.event.impl.hud.Event3D;
++import com.moonsworth.lunar.client.event.impl.render.EventTextCheck;
+ import com.moonsworth.lunar.client.event.impl.world.EventTick;
+-import com.moonsworth.lunar.todo.RenderGameOverlayEvent;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.GuiRenderer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.MinecraftGuiRenderer;
+@@ -44,5 +46,4 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.versions.MCVer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.versions.MatrixStack;
+-import de.johni0702.minecraft.gui.function.*;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.crash.CrashReport;
+@@ -115,5 +116,4 @@
+      * Default for overlays is {@code true} whereas for normal GUI screens it is {@code false}.
+      * @param allowUserInput {@code true} to allow user input, {@code false} to disallow it
+-     * @see net.minecraft.client.gui.GuiScreen#passEvents
+      */
+     public void setAllowUserInput(boolean allowUserInput) {
+@@ -203,8 +203,8 @@
+         }
+ 
+-        @Listen(receiveCanceled = true)
+-        public void renderOverlay(RenderGameOverlayEvent.Text event) {
++        @Listen
++        public void renderOverlay(Event2D event) {
+             MatrixStack stack = new MatrixStack();
+-            float partialTicks = MCVer.getPartialTicks(event);
++            float partialTicks = 0;//event.getPartialTicks();
+             updateRenderer();
+             int layers = getMaxLayer();
+@@ -226,8 +226,6 @@
+ 
+         @Listen
+-        public void tickOverlay(EventTick.ClientTickEvent event) {
+-            if (event.phase == EventTick.Phase.START) {
+-                forEach(Tickable.class).tick();
+-            }
++        public void tickOverlay(EventTick event) {
++            forEach(Tickable.class).tick();
+         }
+ 
+@@ -242,5 +240,5 @@
+     }
+ 
+-    protected class UserInputGuiScreen extends net.minecraft.client.gui.GuiScreen {
++    public class UserInputGuiScreen extends net.minecraft.client.gui.GuiScreen {
+ 
+         {
+@@ -249,5 +247,5 @@
+ 
+         @Override
+-        protected void keyTyped(char typedChar, int keyCode) throws IOException {
++        public void keyTyped(char typedChar, int keyCode) {
+             forEach(Typeable.class).typeKey(MouseUtils.getMousePos(), keyCode, typedChar, isCtrlKeyDown(),
+                     isShiftKeyDown());
+@@ -258,15 +256,15 @@
+ 
+         @Override
+-        protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
++        public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+             forEach(Clickable.class).mouseClick(new Point(mouseX, mouseY), mouseButton);
+         }
+ 
+         @Override
+-        protected void mouseReleased(int mouseX, int mouseY, int mouseButton) {
++        public void mouseReleased(int mouseX, int mouseY, int mouseButton) {
+             forEach(Draggable.class).mouseRelease(new Point(mouseX, mouseY), mouseButton);
+         }
+ 
+         @Override
+-        protected void mouseClickMove(int mouseX, int mouseY, int mouseButton, long timeSinceLastClick) {
++        public void mouseClickMove(int mouseX, int mouseY, int mouseButton, long timeSinceLastClick) {
+             forEach(Draggable.class).mouseDrag(new Point(mouseX, mouseY), mouseButton, timeSinceLastClick);
+         }
+@@ -278,5 +276,5 @@
+ 
+         @Override
+-        public void handleMouseInput() throws IOException {
++        public void handleMouseInput() {
+             super.handleMouseInput();
+             if (Mouse.hasWheel() && Mouse.getEventDWheel() != 0) {

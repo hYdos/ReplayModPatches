@@ -1,0 +1,91 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/replay/handler/GuiHandler.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/replay/handler/GuiHandler.java
+@@ -1,4 +1,10 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.replay.handler;
+ 
++import com.moonsworth.lunar.bridge.client.gui.GuiScreenBridge;
++import com.moonsworth.lunar.client.event.impl.EventState;
++import com.moonsworth.lunar.client.event.impl.gui.EventGuiActionPerformed;
++import com.moonsworth.lunar.client.event.impl.gui.EventInitGui;
++import com.moonsworth.lunar.client.gui.framework.mainmenu.MainMenuBaseLCUI;
++import com.moonsworth.lunar.v1_8.wrapper.client.gui.ScreenInjector;
+ import net.minecraft.client.gui.GuiIngameMenu;
+ import net.minecraft.client.gui.GuiMainMenu;
+@@ -35,6 +41,9 @@
+ 
+     @Listen
+-    public void injectIntoIngameMenu(EventGuiScreen.InitGuiEvent.Post event) {
+-        GuiScreen guiScreen = getGui(event);
++    public void injectIntoIngameMenu(EventInitGui event) {
++        if (event.getState() != EventState.POST) {
++            return;
++        }
++        GuiScreen guiScreen = (GuiScreen) event.getScreen();
+         List<GuiButton> buttonList = getButtonList(event);
+         if (!(guiScreen instanceof GuiIngameMenu)) {
+@@ -47,4 +56,5 @@
+ 
+             final int BUTTON_EXIT_SERVER = 1;
++            final int BUTTON_MULTIPLAYER = 100;
+             final int BUTTON_ADVANCEMENTS = 5;
+             final int BUTTON_STATS = 6;
+@@ -59,5 +69,5 @@
+                     // Replace "Exit Server" button with "Exit Replay" button
+                     remove = true;
+-                    addButton(guiScreen, new InjectedButton(guiScreen, BUTTON_EXIT_REPLAY, b.xPosition, b.yPosition,
++                    addButton(event, new InjectedButton(guiScreen, BUTTON_EXIT_REPLAY, b.xPosition, b.yPosition,
+                             width(b), height(b), "replaymod.gui.exit", this::onButton));
+                 } else if (id.equals(BUTTON_ADVANCEMENTS)) {
+@@ -71,4 +81,7 @@
+                     remove = true;
+                     openToLan = b;
++                } else if (id.equals(BUTTON_MULTIPLAYER)) {
++                    remove = true;
++
+                 }
+                 if (remove) {
+@@ -106,7 +119,7 @@
+ 
+     @Listen
+-    public void ensureReplayStopped(EventGuiScreen.InitGuiEvent event) {
+-        GuiScreen guiScreen = getGui(event);
+-        if (!(guiScreen instanceof GuiMainMenu || guiScreen instanceof GuiMultiplayer)) {
++    public void ensureReplayStopped(EventInitGui event) {
++        GuiScreen guiScreen = (GuiScreen) event.getScreen();
++        if (!((guiScreen instanceof ScreenInjector && ((ScreenInjector) guiScreen).getCustomScreen() instanceof MainMenuBaseLCUI) || guiScreen instanceof GuiMultiplayer)) {
+             return;
+         }
+@@ -128,6 +141,10 @@
+ 
+     @Listen
+-    public void injectIntoMainMenu(EventGuiScreen.InitGuiEvent event) {
+-        GuiScreen guiScreen = getGui(event);
++    public void injectIntoMainMenu(EventInitGui event) {
++        if (true) {
++            // Not needed.
++            return;
++        }
++        GuiScreen guiScreen = (GuiScreen) event.getScreen();
+         List<GuiButton> buttonList = getButtonList(event);
+         if (!(guiScreen instanceof GuiMainMenu)) {
+@@ -156,10 +173,10 @@
+             return;
+         }
+-        addButton(guiScreen, button);
++        addButton((GuiScreenBridge) guiScreen, button);
+     }
+ 
+     @Listen
+-    public void onButton(EventGuiScreen.ActionPerformedEvent.Pre event) {
+-        GuiScreen guiScreen = getGui(event);
++    public void onButton(EventGuiActionPerformed event) {
++        GuiScreen guiScreen = (GuiScreen) event.getScreen();
+         GuiButton button = getButton(event);
+         if (!button.enabled)
+@@ -189,5 +206,5 @@
+         private Consumer<InjectedButton> onClick;
+         public InjectedButton(GuiScreen guiScreen, int buttonId, int x, int y, int width, int height, String buttonText,
+-                Consumer<EventGuiScreen.ActionPerformedEvent.Pre> onClick) {
++                Consumer<EventGuiActionPerformed> onClick) {
+             super(buttonId, x, y, width, height, I18n.format(buttonText));
+             this.guiScreen = guiScreen;

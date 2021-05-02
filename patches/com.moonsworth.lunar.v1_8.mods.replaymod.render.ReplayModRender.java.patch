@@ -1,0 +1,9 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/ReplayModRender.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/ReplayModRender.java
+@@ -95,5 +95,5 @@
+         } catch (IOException e) {
+             e.printStackTrace();
+-            VanillaGuiScreen screen = VanillaGuiScreen.wrap(getCore().getMinecraft().currentScreen);
++            VanillaGuiScreen screen = VanillaGuiScreen.setup(getCore().getMinecraft().currentScreen);
+             CrashReport report = CrashReport.makeCrashReport(e, "Reading timeline");
+             Utils.error(LOGGER, screen, report, () -> {

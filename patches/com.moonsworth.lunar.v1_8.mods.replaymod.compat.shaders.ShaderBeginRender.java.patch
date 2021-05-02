@@ -1,0 +1,26 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/compat/shaders/ShaderBeginRender.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/compat/shaders/ShaderBeginRender.java
+@@ -1,4 +1,5 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.compat.shaders;
+ 
++import com.moonsworth.lunar.client.event.impl.EventState;
+ import net.minecraft.client.Minecraft;
+ 
+@@ -8,5 +9,5 @@
+ 
+ import com.moonsworth.lunar.client.event.annotation.Listen;
+-import com.moonsworth.lunar.client.event.impl.world.EventTick;
++import com.moonsworth.lunar.client.event.impl.world.EventRenderTick;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.utils.EventRegistrations;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.render.hooks.EntityRendererHandler;
+@@ -22,7 +23,8 @@
+      */
+     @Listen
+-    public void onRenderTickStart(EventTick.RenderTickEvent event) {
+-        if (event.phase != EventTick.Phase.START)
++    public void onRenderTickStart(EventRenderTick event) {
++        if (event.getState() != EventState.PRE) {
+             return;
++        }
+         if (ShaderReflection.shaders_beginRender == null)
+             return;

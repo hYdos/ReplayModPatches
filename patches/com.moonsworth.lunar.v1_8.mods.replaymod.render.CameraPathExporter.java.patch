@@ -1,0 +1,8 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/CameraPathExporter.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/CameraPathExporter.java
+@@ -1,4 +1,5 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.render;
+ 
++import com.moonsworth.lunar.v1_8.mods.replaymod.core.ReplayMod;
+ import de.javagl.jgltf.impl.v2.Accessor;
+ import de.javagl.jgltf.impl.v2.Animation;

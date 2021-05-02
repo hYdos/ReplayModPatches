@@ -1,0 +1,51 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/recording/gui/GuiRecordingOverlay.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/recording/gui/GuiRecordingOverlay.java
+@@ -2,21 +2,6 @@
+ 
+ import net.minecraft.client.Minecraft;
+-import net.minecraft.client.gui.FontRenderer;
+-import net.minecraft.client.resources.I18n;
+-
+-import static com.moonsworth.lunar.v1_8.mods.replaymod.core.ReplayMod.TEXTURE;
+-import static com.moonsworth.lunar.v1_8.mods.replaymod.core.ReplayMod.TEXTURE_SIZE;
+-import static com.moonsworth.lunar.v1_8.mods.replaymod.core.versions.MCVer.*;
+-import static net.minecraft.client.renderer.GlStateManager.*;
+-
+-import com.moonsworth.lunar.client.event.annotation.Listen;
+-import com.moonsworth.lunar.todo.RenderGameOverlayEvent;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.SettingsRegistry;
+-import com.moonsworth.lunar.v1_8.mods.replaymod.core.versions.MCVer;
+-import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.GuiRenderer;
+-import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.MinecraftGuiRenderer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.utils.EventRegistrations;
+-import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.versions.MatrixStack;
+-import com.moonsworth.lunar.v1_8.mods.replaymod.recording.Setting;
+ 
+ /**
+@@ -34,11 +19,11 @@
+     }
+ 
+-    /**
++    /*
++     * Moved to ReplayModRecordingIndicatorChild
++     * todo: Should we rip this class out completely since it has been replaced with a child mod in ReplayMod?
++     *
+      * Render the recording icon and text in the top left corner of the screen.
+-     */
+-    @Listen
+-    public void renderRecordingIndicator(RenderGameOverlayEvent.Post event) {
+-        if (getType(event) != RenderGameOverlayEvent.ElementType.ALL)
+-            return;
++    //@Listen
++    public void renderRecordingIndicator(Event2D event) {
+         MatrixStack stack = new MatrixStack();
+         if (guiControls.isStopped())
+@@ -53,6 +38,8 @@
+             enableAlpha();
+             GuiRenderer renderer = new MinecraftGuiRenderer(stack, MCVer.newScaledResolution(mc));
++
+             renderer.drawTexturedRect(10, 10, 58, 20, 16, 16, 16, 16, TEXTURE_SIZE, TEXTURE_SIZE);
+         }
+     }
++     */
+ }

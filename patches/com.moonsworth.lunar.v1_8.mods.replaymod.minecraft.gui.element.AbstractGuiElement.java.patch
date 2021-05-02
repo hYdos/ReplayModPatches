@@ -1,0 +1,9 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/element/AbstractGuiElement.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/element/AbstractGuiElement.java
+@@ -36,5 +36,5 @@
+ 
+ public abstract class AbstractGuiElement<T extends AbstractGuiElement<T>> implements GuiElement<T> {
+-    protected static final ResourceLocation TEXTURE = new ResourceLocation("jgui", "gui.png");
++    protected static final ResourceLocation TEXTURE = new ResourceLocation("lunar", "replaymod/gui.png");
+ 
+     private final Minecraft minecraft = MCVer.getMinecraft();

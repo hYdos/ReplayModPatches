@@ -1,0 +1,18 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/blend/exporters/ItemExporter.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/blend/exporters/ItemExporter.java
+@@ -7,5 +7,4 @@
+ import net.minecraft.client.renderer.block.model.BakedQuad;
+ import net.minecraft.client.resources.model.IBakedModel;
+-import com.moonsworth.lunar.todo.LightUtil;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.render.blend.BlendMeshBuilder;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.render.blend.Exporter;
+@@ -78,5 +77,8 @@
+                     ? stack.getItem().getColorFromItemStack(stack, quad.getTintIndex()) | 0xff000000
+                     : 0xffffffff;
+-            LightUtil.renderQuadColor(buffer, quad, color);
++            //            LightUtil.renderQuadColor(buffer, quad, color);
++
++            buffer.addVertexData(quad.getVertexData());
++            buffer.putColor4(color);
+         }
+ 

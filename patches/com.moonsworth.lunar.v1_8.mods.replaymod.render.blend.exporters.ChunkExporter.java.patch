@@ -1,0 +1,22 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/blend/exporters/ChunkExporter.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/blend/exporters/ChunkExporter.java
+@@ -9,6 +9,6 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.render.blend.data.DMesh;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.render.blend.data.DObject;
+-import com.replaymod.render.blend.mixin.ContainerLocalRenderInformationAccessor;
+ import net.minecraft.client.Minecraft;
++import net.minecraft.client.renderer.RenderGlobal;
+ import net.minecraft.client.renderer.texture.TextureMap;
+ import net.minecraft.client.renderer.GLAllocation;
+@@ -52,9 +52,6 @@
+ 
+         Minecraft mc = MCVer.getMinecraft();
+-        @SuppressWarnings("unchecked")
+-        List<ContainerLocalRenderInformationAccessor> renderInfos = ((WorldRendererAccessor) mc.renderGlobal)
+-                .getRenderInfos();
+-        for (ContainerLocalRenderInformationAccessor renderInfo : renderInfos) {
+-            RenderChunk renderChunk = renderInfo.getRenderChunk();
++        for (RenderGlobal.ContainerLocalRenderInformation renderInfo : mc.renderGlobal.renderInfos) {
++            RenderChunk renderChunk = renderInfo.renderChunk;
+             CompiledChunk compiledChunk = renderChunk.getCompiledChunk();
+             if (!compiledChunk.isEmpty()) {

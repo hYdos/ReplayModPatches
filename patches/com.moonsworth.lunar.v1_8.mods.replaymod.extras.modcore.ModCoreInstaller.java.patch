@@ -1,0 +1,34 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/extras/modcore/ModCoreInstaller.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/extras/modcore/ModCoreInstaller.java
+@@ -52,5 +52,4 @@
+ import java.util.List;
+ 
+-import net.minecraft.launchwrapper.Launch;
+ import java.net.URLClassLoader;
+ import java.util.LinkedHashSet;
+@@ -65,11 +64,11 @@
+ 
+     private static boolean isInitalized() {
+-        try {
+-            LinkedHashSet<String> objects = new LinkedHashSet<>();
+-            objects.add(className);
+-            Launch.classLoader.clearNegativeEntries(objects);
+-            return Class.forName(className) != null;
+-        } catch (ClassNotFoundException ignored) {
+-        }
++//        try {
++//            LinkedHashSet<String> objects = new LinkedHashSet<>();
++//            objects.add(className);
++//            Launch.classLoader.clearNegativeEntries(objects);
++//            return Class.forName(className) != null;
++//        } catch (ClassNotFoundException ignored) {
++//        }
+         return false;
+     }
+@@ -171,5 +170,5 @@
+             URL url = file.toURI().toURL();
+             ClassLoader classLoader = ModCoreInstaller.class.getClassLoader();
+-            Launch.classLoader.addURL(url);
++//            Launch.classLoader.addURL(url);
+             Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+             method.setAccessible(true);

@@ -1,0 +1,66 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/core/KeyBindingRegistry.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/core/KeyBindingRegistry.java
+@@ -3,12 +3,17 @@
+ import com.google.common.collect.ArrayListMultimap;
+ import com.google.common.collect.Multimap;
++import com.moonsworth.lunar.bridge.BridgeManager;
+ import com.moonsworth.lunar.client.event.annotation.Listen;
+-import com.moonsworth.lunar.client.event.impl.world.EventTick;
+-import com.moonsworth.lunar.todo.ClientRegistry;
++import com.moonsworth.lunar.client.event.impl.EventState;
++import com.moonsworth.lunar.client.event.impl.world.EventRenderTick;
++import com.moonsworth.lunar.client.options.KeyBindOption;
++import com.moonsworth.lunar.client.util.Ref;
++import com.moonsworth.lunar.legacy.input.LegacyKeyboard;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.events.KeyBindingEventCallback;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.events.KeyEventCallback;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.versions.MCVer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.utils.EventRegistrations;
+-import com.replaymod.core.mixin.KeyBindingAccessor;
++import com.moonsworth.lunar.v1_8.mods.replaymod.replay.ReplayModReplay;
++import net.minecraft.client.resources.I18n;
+ import net.minecraft.client.settings.KeyBinding;
+ import net.minecraft.crash.CrashReport;
+@@ -51,6 +56,11 @@
+         Binding binding = bindings.get(name);
+         if (binding == null) {
+-            KeyBinding keyBinding = new KeyBinding(name, keyCode, CATEGORY);
+-            ClientRegistry.registerKeyBinding(keyBinding);
++            KeyBinding keyBinding = (KeyBinding) BridgeManager.getImplementation().initKeyBinding(name, keyCode, CATEGORY);
++            String formattedName = I18n.format(name);
++            if (Ref.client().getMods().getReplayMod().getKeybinds().has(formattedName)) {
++                keyCode = Ref.client().getMods().getReplayMod().getKeybinds().get(formattedName).getAsInt();
++            }
++            keyBinding.setKeyCode(keyCode);
++            KeyBinding.resetKeyBindingArrayAndHash();
+             binding = new Binding(name, keyBinding);
+             bindings.put(name, binding);
+@@ -77,7 +87,8 @@
+ 
+     @Listen
+-    public void onTick(EventTick.RenderTickEvent event) {
+-        if (event.phase != EventTick.Phase.START)
++    public void onTick(EventRenderTick event) {
++        if (event.getState() != EventState.PRE) {
+             return;
++        }
+         handleRepeatedKeyBindings();
+     }
+@@ -104,4 +115,9 @@
+ 
+     private void invokeKeyBindingHandlers(Binding binding, Collection<Runnable> handlers) {
++        // When in the replay viewer and the keybinding is "onlyInReplay" don't run the keybinding
++        if (onlyInReplay.contains(binding.keyBinding) && ReplayModReplay.instance.getReplayHandler() == null) {
++            return;
++        }
++
+         for (final Runnable runnable : handlers) {
+             try {
+@@ -161,6 +177,5 @@
+ 
+         public void trigger() {
+-            KeyBindingAccessor acc = (KeyBindingAccessor) keyBinding;
+-            acc.setPressTime(acc.getPressTime() + 1);
++            keyBinding.pressTime = keyBinding.pressTime + 1;
+             handleKeyBindings();
+         }

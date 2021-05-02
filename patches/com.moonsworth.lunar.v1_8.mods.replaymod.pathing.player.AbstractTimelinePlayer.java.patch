@@ -1,0 +1,37 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/pathing/player/AbstractTimelinePlayer.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/pathing/player/AbstractTimelinePlayer.java
+@@ -9,6 +9,4 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.utils.EventRegistrations;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.replay.ReplayHandler;
+-import com.replaymod.core.mixin.MinecraftAccessor;
+-import com.replaymod.core.mixin.TimerAccessor;
+ import com.replaymod.replaystudio.pathing.path.Keyframe;
+ import com.replaymod.replaystudio.pathing.path.Path;
+@@ -75,10 +73,8 @@
+         lastTime = 0;
+ 
+-        MinecraftAccessor mcA = (MinecraftAccessor) mc;
+-        ReplayTimer timer = new ReplayTimer(mcA.getTimer());
+-        mcA.setTimer(timer);
++        ReplayTimer timer = new ReplayTimer(mc.timer);
++        mc.timer = timer;
+ 
+         //noinspection ConstantConditions
+-        TimerAccessor timerA = (TimerAccessor) timer;
+         timer.timerSpeed = 1;
+         timer.elapsedPartialTicks = timer.elapsedTicks = 0;
+@@ -99,6 +95,5 @@
+     public void onTick() {
+         if (future.isDone()) {
+-            MinecraftAccessor mcA = (MinecraftAccessor) mc;
+-            mcA.setTimer(((ReplayTimer) mcA.getTimer()).getWrapped());
++            mc.timer = ((ReplayTimer) mc.timer).getWrapped();
+             replayHandler.getReplaySender().setReplaySpeed(0);
+             if (wasAsyncMode) {
+@@ -127,5 +122,5 @@
+         float previousTimeInTicks = lastTime / 50f;
+         float passedTicks = timeInTicks - previousTimeInTicks;
+-        Timer renderTickCounter = ((MinecraftAccessor) mc).getTimer();
++        Timer renderTickCounter = mc.timer;
+         if (renderTickCounter instanceof ReplayTimer) {
+             ReplayTimer timer = (ReplayTimer) renderTickCounter;

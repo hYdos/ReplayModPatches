@@ -1,0 +1,20 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/blend/exporters/ParticlesExporter.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/blend/exporters/ParticlesExporter.java
+@@ -1,5 +1,4 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.render.blend.exporters;
+ 
+-import com.replaymod.render.blend.mixin.ParticleAccessor;
+ import net.minecraft.client.Minecraft;
+ 
+@@ -93,8 +92,7 @@
+         // Instead of actually translating, we just add the translation on the current model-view-matrix.
+         Matrix4f modelView = getGlModelViewMatrix();
+-        ParticleAccessor acc = (ParticleAccessor) particle;
+-        double dx = acc.getPrevPosX() + (acc.getPosX() - acc.getPrevPosX()) * renderPartialTicks;
+-        double dy = acc.getPrevPosY() + (acc.getPosY() - acc.getPrevPosY()) * renderPartialTicks;
+-        double dz = acc.getPrevPosZ() + (acc.getPosZ() - acc.getPrevPosZ()) * renderPartialTicks;
++        double dx = particle.prevPosX + (particle.posX - particle.prevPosX) * renderPartialTicks;
++        double dy = particle.prevPosY + (particle.posY - particle.prevPosY) * renderPartialTicks;
++        double dz = particle.prevPosZ + (particle.posZ - particle.prevPosZ) * renderPartialTicks;
+         dx -= EntityFX.interpPosX;
+         dy -= EntityFX.interpPosY;

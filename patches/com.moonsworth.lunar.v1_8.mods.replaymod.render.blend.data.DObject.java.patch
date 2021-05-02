@@ -1,0 +1,8 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/blend/data/DObject.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/blend/data/DObject.java
+@@ -1,4 +1,5 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.render.blend.data;
+ 
++import com.moonsworth.lunar.v1_8.mods.replaymod.render.blend.Util;
+ import org.blender.dna.AnimData;
+ import org.blender.dna.BlenderObject;

@@ -1,0 +1,131 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/core/SettingsRegistry.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/core/SettingsRegistry.java
+@@ -1,4 +1,10 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.core;
+ 
++import com.moonsworth.lunar.client.Lunar;
++import com.moonsworth.lunar.client.gui.framework.components.TextOption;
++import com.moonsworth.lunar.client.options.BooleanOption;
++import com.moonsworth.lunar.client.options.NumberOption;
++import com.moonsworth.lunar.client.options.Option;
++import com.moonsworth.lunar.client.util.Ref;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+@@ -7,8 +13,9 @@
+ import java.lang.reflect.Modifier;
+ import java.util.*;
++import java.util.function.Supplier;
+ 
+ import static com.moonsworth.lunar.v1_8.mods.replaymod.core.versions.MCVer.*;
+ 
+-import com.moonsworth.lunar.todo.Configuration;
++// import com.moonsworth.lunar.todo.Configuration;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.events.SettingsChangedCallback;
+ 
+@@ -17,7 +24,7 @@
+     private Map<SettingKey<?>, Object> settings = Collections.synchronizedMap(new LinkedHashMap<>());
+     private static final Object NULL_OBJECT = new Object();
+-    private Configuration configuration;
++    // private Configuration configuration;
+ 
+-    public void setConfiguration(Configuration configuration) {
++    /*public void setConfiguration(Configuration configuration) {
+         this.configuration = configuration;
+ 
+@@ -27,5 +34,5 @@
+             register(key);
+         }
+-    }
++    }*/
+ 
+     public void register(Class<?> settingsClass) {
+@@ -43,5 +50,5 @@
+ 
+     public void register(SettingKey<?> key) {
+-        Object value;
++        /*Object value;
+         if (configuration != null) {
+             if (key.getDefault() instanceof Boolean) {
+@@ -59,4 +66,5 @@
+             value = NULL_OBJECT;
+         }
++        */Object value = key.getLunarOption().get();
+         settings.put(key, value);
+     }
+@@ -68,4 +76,5 @@
+     @SuppressWarnings("unchecked")
+     public <T> T get(SettingKey<T> key) {
++        settings.put(key, key.getLunarOption().get());
+         if (!settings.containsKey(key)) {
+             throw new IllegalArgumentException("Setting " + key + " unknown.");
+@@ -76,11 +85,15 @@
+     public <T> void set(SettingKey<T> key, T value) {
+         if (key.getDefault() instanceof Boolean) {
+-            configuration.get(key.getCategory(), key.getKey(), (Boolean) key.getDefault()).set((Boolean) value);
++            key.getLunarOption().update(value);
++//            configuration.get(key.getCategory(), key.getKey(), (Boolean) key.getDefault()).set((Boolean) value);
+         } else if (key.getDefault() instanceof Integer) {
+-            configuration.get(key.getCategory(), key.getKey(), (Integer) key.getDefault()).set((Integer) value);
++            key.getLunarOption().update(value);
++//            configuration.get(key.getCategory(), key.getKey(), (Integer) key.getDefault()).set((Integer) value);
+         } else if (key.getDefault() instanceof Double) {
+-            configuration.get(key.getCategory(), key.getKey(), (Double) key.getDefault()).set((Double) value);
++            key.getLunarOption().update(value);
++//            configuration.get(key.getCategory(), key.getKey(), (Double) key.getDefault()).set((Double) value);
+         } else if (key.getDefault() instanceof String) {
+-            configuration.get(key.getCategory(), key.getKey(), (String) key.getDefault()).set((String) value);
++            key.getLunarOption().update(value);
++//            configuration.get(key.getCategory(), key.getKey(), (String) key.getDefault()).set((String) value);
+         } else {
+             throw new IllegalArgumentException("Default type " + key.getDefault().getClass() + " not supported.");
+@@ -91,5 +104,5 @@
+ 
+     public void save() {
+-        configuration.save();
++        // configuration.save();
+     }
+ 
+@@ -99,4 +112,5 @@
+         String getDisplayString();
+         T getDefault();
++        Option getLunarOption();
+     }
+ 
+@@ -110,4 +124,5 @@
+         private final String displayString;
+         private final T defaultValue;
++        private final Option<T> option;
+ 
+         public SettingKeys(String category, String key, String displayString, T defaultValue) {
+@@ -116,4 +131,21 @@
+             this.displayString = displayString;
+             this.defaultValue = defaultValue;
++
++            option = Ref.client().getMods().getReplayMod().getOptions().stream().filter(option1 -> option1.getId().startsWith(key)).findFirst().orElseGet(() -> {
++                Option option1;
++                if (getDefault() instanceof Boolean) {
++                    option1 = new BooleanOption(key, (Boolean) defaultValue);
++                } else if (getDefault() instanceof Integer) {
++                    option1 = new NumberOption<>(key, (Integer) defaultValue, 1700, 1900);
++                } else if (getDefault() instanceof Double) {
++                    option1 = new NumberOption<>(key, (Double) defaultValue, 0D, 100D);
++                } else if (getDefault() instanceof String) {
++                    option1 = new TextOption(key, (String) defaultValue);
++                } else {
++                    throw new IllegalArgumentException("Default type " + getDefault().getClass() + " not supported.");
++                }
++                Lunar.getClient().getMods().getReplayMod().getOptions().add(option1);
++                return option1;
++            });
+         }
+ 
+@@ -137,4 +169,9 @@
+             return defaultValue;
+         }
++
++        @Override
++        public Option<T> getLunarOption() {
++            return option;
++        }
+     }
+ 

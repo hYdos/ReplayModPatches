@@ -1,0 +1,16 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/recording/gui/GuiSavingReplay.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/recording/gui/GuiSavingReplay.java
+@@ -135,5 +135,5 @@
+                 logger.error("Deleting replay file:", e);
+                 CrashReport crashReport = CrashReport.makeCrashReport(e, "Deleting replay file");
+-                core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(mc.currentScreen), crashReport, () -> {
++                core.runLater(() -> Utils.error(logger, GuiScreen.wrap(mc.currentScreen), crashReport, () -> {
+                 }));
+             }
+@@ -151,5 +151,5 @@
+             logger.error("Renaming replay file:", e);
+             CrashReport crashReport = CrashReport.makeCrashReport(e, "Renaming replay file");
+-            core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(mc.currentScreen), crashReport, () -> {
++            core.runLater(() -> Utils.error(logger, GuiScreen.wrap(mc.currentScreen), crashReport, () -> {
+             }));
+         }

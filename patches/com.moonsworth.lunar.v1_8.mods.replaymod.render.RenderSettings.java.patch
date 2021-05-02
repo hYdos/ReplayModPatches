@@ -1,0 +1,9 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/RenderSettings.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/RenderSettings.java
+@@ -2,5 +2,5 @@
+ 
+ import com.google.gson.annotations.SerializedName;
+-import com.moonsworth.lunar.todo.ComparableVersion;
++import com.moonsworth.lunar.client.util.ComparableVersion;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.versions.MCVer;
+ import net.minecraft.client.resources.I18n;

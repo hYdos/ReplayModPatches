@@ -1,0 +1,14 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/replay/events/ReplayChatMessageEvent.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/replay/events/ReplayChatMessageEvent.java
+@@ -2,9 +2,8 @@
+ 
+ import com.moonsworth.lunar.client.event.Event;
+-import com.moonsworth.lunar.todo.Cancelable;
++import com.moonsworth.lunar.client.event.EventCancellable;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.replay.camera.CameraEntity;
+ 
+-@Cancelable
+-public class ReplayChatMessageEvent extends Event {
++public class ReplayChatMessageEvent extends EventCancellable {
+     private final CameraEntity cameraEntity;
+ 

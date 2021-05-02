@@ -1,0 +1,30 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/replay/gui/screen/GuiReplayViewer.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/replay/gui/screen/GuiReplayViewer.java
+@@ -42,8 +42,8 @@
+ import com.replaymod.replaystudio.replay.ReplayFile;
+ import com.replaymod.replaystudio.replay.ReplayMetaData;
+-import de.johni0702.minecraft.gui.element.*;
+ import net.minecraft.client.gui.GuiErrorScreen;
+ import net.minecraft.crash.CrashReport;
+ import net.minecraft.util.ReportedException;
++import net.minecraft.util.ResourceLocation;
+ import org.apache.commons.io.FileUtils;
+ import org.apache.commons.io.IOCase;
+@@ -290,6 +290,4 @@
+     }
+ 
+-    private static final GuiImage DEFAULT_THUMBNAIL = new GuiImage().setTexture(Utils.DEFAULT_THUMBNAIL);
+-
+     public static class GuiSelectReplayPopup extends AbstractGuiPopup<GuiSelectReplayPopup> {
+         public static GuiSelectReplayPopup openGui(GuiContainer container, File folder) {
+@@ -541,8 +539,9 @@
+             date.setText(new SimpleDateFormat().format(new Date(dateMillis)));
+             if (thumbImage == null) {
+-                thumbnail = new GuiImage(DEFAULT_THUMBNAIL).setSize(30 * 16 / 9, 30);
++                thumbnail = new GuiImage().setTexture(Utils.DEFAULT_THUMBNAIL).setSize(30 * 16 / 9, 30);
+                 addElements(null, thumbnail);
+             } else {
+                 thumbnail = new GuiImage(this).setTexture(thumbImage).setSize(30 * 16 / 9, 30);
++
+             }
+             duration.setText(Utils.convertSecondsToShortString(metaData.getDuration() / 1000));

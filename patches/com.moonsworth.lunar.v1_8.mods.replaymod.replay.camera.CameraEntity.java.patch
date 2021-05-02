@@ -1,0 +1,272 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/replay/camera/CameraEntity.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/replay/camera/CameraEntity.java
+@@ -1,6 +1,16 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.replay.camera;
+ 
+-import com.replaymod.replay.mixin.FirstPersonRendererAccessor;
++import com.moonsworth.lunar.client.event.EventWithResult;
++import com.moonsworth.lunar.client.event.impl.EventState;
++import com.moonsworth.lunar.client.event.impl.input.EventKeyAction;
++import com.moonsworth.lunar.client.event.impl.input.EventMouseAction;
++import com.moonsworth.lunar.client.event.impl.render.EventCrosshairCheck;
++import com.moonsworth.lunar.client.event.impl.render.EventHotbarCheck;
++import com.moonsworth.lunar.client.event.impl.world.EventRenderTick;
++import com.moonsworth.lunar.client.event.impl.world.entity.EventEntityViewRender;
++import com.moonsworth.lunar.client.scheduler.LunarScheduler;
++import com.moonsworth.lunar.client.util.Ref;
+ import com.replaymod.replaystudio.util.Location;
++import lombok.SneakyThrows;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.client.entity.AbstractClientPlayer;
+@@ -26,4 +36,5 @@
+ import java.util.Map;
+ import java.util.UUID;
++import java.util.concurrent.TimeUnit;
+ import java.util.function.Function;
+ 
+@@ -34,8 +45,4 @@
+ import com.moonsworth.lunar.client.event.impl.render.EventRenderHand;
+ import com.moonsworth.lunar.client.event.impl.world.EventTick;
+-import com.moonsworth.lunar.todo.EntityViewRenderEvent;
+-import com.moonsworth.lunar.todo.EventPriority;
+-import com.moonsworth.lunar.todo.InputEvent;
+-import com.moonsworth.lunar.todo.RenderGameOverlayEvent;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.KeyBindingRegistry;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.ReplayMod;
+@@ -92,4 +99,5 @@
+     }
+ 
++
+     public CameraController getCameraController() {
+         return cameraController;
+@@ -260,5 +268,5 @@
+ 
+     @Override
+-    protected void createRunningParticles() {
++    public void createRunningParticles() {
+         // We do not produce any particles, we are a camera
+     }
+@@ -275,4 +283,5 @@
+     }
+ 
++    /* Lunar: this looks like a Forge method
+     @Override
+     public boolean shouldRenderInPass(int pass) {
+@@ -281,5 +290,5 @@
+         // cause any unwanted shadows when rendering with shaders.
+         return false;
+-    }
++    }*/
+ 
+     @Override
+@@ -294,9 +303,5 @@
+     @Override
+     public boolean isInvisible() {
+-        Entity view = getRenderViewEntity(this.mc);
+-        if (view != this) {
+-            return view.isInvisible();
+-        }
+-        return super.isInvisible();
++        return true;
+     }
+ 
+@@ -349,9 +354,10 @@
+     }
+ 
++    /* Lunar: this looks like a Forge method
+     @Override
+     public void openGui(Object mod, int modGuiId, World world, int x, int y, int z) {
+         // Do not open any block GUIs for the camera entities
+         // Note: Vanilla GUIs are filtered out on a packet level, this only applies to mod GUIs
+-    }
++    } */
+ 
+     @Override
+@@ -383,8 +389,8 @@
+         Map<String, KeyBindingRegistry.Binding> keyBindings = ReplayMod.instance.getKeyBindingRegistry().getBindings();
+         if (keyBindings.get("replaymod.input.rollclockwise").keyBinding.isKeyDown()) {
+-            roll += Utils.isCtrlDown() ? 0.2 : 1;
++            roll += (Utils.isCtrlDown() ? 0.2 : 1) * timePassed * 0.05f;
+         }
+         if (keyBindings.get("replaymod.input.rollcounterclockwise").keyBinding.isKeyDown()) {
+-            roll -= Utils.isCtrlDown() ? 0.2 : 1;
++            roll -= (Utils.isCtrlDown() ? 0.2 : 1) * timePassed * 0.05f;
+         }
+ 
+@@ -416,6 +422,5 @@
+     @Override
+     public void addChatMessage(IChatComponent message) {
+-        if (Lunar.EVENT_BUS.post(new ReplayChatMessageEvent(this)))
+-            return;
++        Lunar.EVENT_BUS.post(new ReplayChatMessageEvent(this));
+         super.addChatMessage(message);
+     }
+@@ -425,42 +430,40 @@
+ 
+         private EventHandler() {
++
+         }
+ 
+         @Listen
+-        public void onPreClientTick(EventTick.ClientTickEvent event) {
+-            if (event.phase != EventTick.Phase.START)
+-                return;
++        public void onPreClientTick(EventTick event) {
+             updateArmYawAndPitch();
+         }
+ 
+         @Listen
+-        public void onRenderUpdate(EventTick.RenderTickEvent event) {
+-            if (event.phase != EventTick.Phase.START)
++        public void onRenderUpdate(EventRenderTick event) {
++            if (event.getState() != EventState.PRE) {
+                 return;
++            }
+             update();
+         }
+ 
+         @Listen
+-        public void onKeyEvent(InputEvent.KeyInputEvent event) {
++        public void onKeyEvent(EventKeyAction event) {
+             handleInputEvents();
+         }
+ 
+         @Listen
+-        public void onMouseInput(InputEvent.MouseInputEvent event) {
++        public void onMouseInput(EventMouseAction event) {
+             handleInputEvents();
+         }
+ 
+         @Listen
+-        public void preCrosshairRender(RenderGameOverlayEvent.Pre event) {
+-            // The crosshair should only render if targeted entity can actually be spectated
+-            if (MCVer.getType(event) == RenderGameOverlayEvent.ElementType.CROSSHAIRS) {
+-                event.setCanceled(!canSpectate(mc.pointedEntity));
+-            }
+-            // Hotbar should never be rendered
+-            if (MCVer.getType(event) == RenderGameOverlayEvent.ElementType.HOTBAR) {
+-                event.setCanceled(true);
+-            }
++        public void preCrosshairRender(EventCrosshairCheck event) {
++            event.setResult(EventWithResult.EventStateResult.DENY);
+         }
+ 
++        @Listen
++        public void preHotBar(EventHotbarCheck event) {
++            event.setResult(EventWithResult.EventStateResult.DENY);
++        }
++
+         {
+             on(SettingsChangedCallback.EVENT, this::onSettingsChanged);
+@@ -480,9 +483,9 @@
+             // Unless we are spectating another player, don't render our hand
+             if (getRenderViewEntity(mc) == CameraEntity.this || !(getRenderViewEntity(mc) instanceof EntityPlayer)) {
+-                event.setCanceled(true);
++                event.setCancelled(true);
+             }
+         }
+ 
+-        @Listen(priority = EventPriority.LOWEST)
++        @Listen
+         public void onRenderHandMonitor(EventRenderHand event) {
+             Entity view = getRenderViewEntity(mc);
+@@ -493,9 +496,8 @@
+                     lastHandRendered = player;
+ 
+-                    FirstPersonRendererAccessor acc = (FirstPersonRendererAccessor) mc.entityRenderer.itemRenderer;
+-                    acc.setPrevEquippedProgress(1);
+-                    acc.setEquippedProgress(1);
+-                    acc.setItemToRender(player.inventory.getCurrentItem());
+-                    acc.setEquippedItemSlot(player.inventory.currentItem);
++                    mc.entityRenderer.itemRenderer.prevEquippedProgress = 1;
++                    mc.entityRenderer.itemRenderer.equippedProgress = 1;
++                    mc.entityRenderer.itemRenderer.itemToRender = player.inventory.getCurrentItem();
++                    mc.entityRenderer.itemRenderer.equippedItemSlot = player.inventory.currentItem;
+ 
+                     mc.thePlayer.renderArmYaw = mc.thePlayer.prevRenderArmYaw = player.rotationYaw;
+@@ -506,7 +508,7 @@
+ 
+         @Listen
+-        public void onEntityViewRenderEvent(EntityViewRenderEvent.CameraSetup event) {
++        public void onEntityViewRenderEvent(EventEntityViewRender.CameraSetup event) {
+             if (mc.getRenderViewEntity() == CameraEntity.this) {
+-                event.roll = roll;
++                event.setRoll(roll);
+             }
+         }
+@@ -514,39 +516,40 @@
+         private boolean heldItemTooltipsWasTrue;
+ 
+-        @Listen
+-        public void preRenderGameOverlay(RenderGameOverlayEvent.Pre event) {
+-            switch (MCVer.getType(event)) {
+-                case ALL :
+-                    heldItemTooltipsWasTrue = mc.gameSettings.heldItemTooltips;
+-                    mc.gameSettings.heldItemTooltips = false;
+-                    break;
+-                case ARMOR :
+-                case HEALTH :
+-                case FOOD :
+-                case AIR :
+-                case HOTBAR :
+-                case EXPERIENCE :
+-                case HEALTHMOUNT :
+-                case JUMPBAR :
+-                    event.setCanceled(true);
+-                    break;
+-                case HELMET :
+-                case PORTAL :
+-                case CROSSHAIRS :
+-                case BOSSHEALTH :
+-                case TEXT :
+-                case CHAT :
+-                case PLAYER_LIST :
+-                case DEBUG :
+-                    break;
+-            }
+-        }
+-
+-        @Listen
+-        public void postRenderGameOverlay(RenderGameOverlayEvent.Post event) {
+-            if (MCVer.getType(event) != RenderGameOverlayEvent.ElementType.ALL)
+-                return;
+-            mc.gameSettings.heldItemTooltips = heldItemTooltipsWasTrue;
+-        }
++// TODO
++//        @Listen
++//        public void preRenderGameOverlay(RenderGameOverlayEvent.Pre event) {
++//            switch (MCVer.getType(event)) {
++//                case ALL :
++//                    heldItemTooltipsWasTrue = mc.gameSettings.heldItemTooltips;
++//                    mc.gameSettings.heldItemTooltips = false;
++//                    break;
++//                case ARMOR :
++//                case HEALTH :
++//                case FOOD :
++//                case AIR :
++//                case HOTBAR :
++//                case EXPERIENCE :
++//                case HEALTHMOUNT :
++//                case JUMPBAR :
++//                    event.setCanceled(true);
++//                    break;
++//                case HELMET :
++//                case PORTAL :
++//                case CROSSHAIRS :
++//                case BOSSHEALTH :
++//                case TEXT :
++//                case CHAT :
++//                case PLAYER_LIST :
++//                case DEBUG :
++//                    break;
++//            }
++//        }
++// TODO
++//        @Listen
++//        public void postRenderGameOverlay(RenderGameOverlayEvent.Post event) {
++//            if (MCVer.getType(event) != RenderGameOverlayEvent.ElementType.ALL)
++//                return;
++//            mc.gameSettings.heldItemTooltips = heldItemTooltipsWasTrue;
++//        }
+     }
+ }

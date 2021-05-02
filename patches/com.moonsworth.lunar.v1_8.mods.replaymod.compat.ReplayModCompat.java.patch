@@ -1,0 +1,19 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/compat/ReplayModCompat.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/compat/ReplayModCompat.java
+@@ -4,9 +4,7 @@
+ import org.apache.logging.log4j.Logger;
+ 
+-import com.replaymod.compat.oranges17animations.HideInvisibleEntities;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.compat.optifine.DisableFastRender;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.compat.shaders.ShaderBeginRender;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.Module;
+-import com.replaymod.compat.bettersprinting.DisableBetterSprinting;
+ 
+ public class ReplayModCompat implements Module {
+@@ -17,6 +15,4 @@
+         new ShaderBeginRender().register();
+         new DisableFastRender().register();
+-        new HideInvisibleEntities().register();
+-        DisableBetterSprinting.register();
+     }
+ 

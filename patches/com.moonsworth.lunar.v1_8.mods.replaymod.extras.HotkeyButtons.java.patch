@@ -1,0 +1,9 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/extras/HotkeyButtons.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/extras/HotkeyButtons.java
+@@ -79,5 +79,5 @@
+                                             I18n.format("replaymod.gui.ingame.autoactivating."
+                                                     + (keyBinding.isAutoActivating() ? "disable" : "enable")),}));
+-                                    setLabelColor(keyBinding.isAutoActivating() ? 0x00ff00 : 0xe0e0e0);
++//                                    setLabelColor(keyBinding.isAutoActivating() ? 0x00ff00 : 0xe0e0e0);
+                                 }
+ 

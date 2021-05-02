@@ -1,0 +1,8 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/gui/GuiRenderSettings.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/gui/GuiRenderSettings.java
+@@ -40,5 +40,4 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.replay.ReplayHandler;
+ import com.replaymod.replaystudio.pathing.path.Timeline;
+-import de.johni0702.minecraft.gui.element.*;
+ import net.minecraft.client.gui.GuiErrorScreen;
+ import net.minecraft.client.resources.I18n;

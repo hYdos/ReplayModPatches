@@ -1,0 +1,9 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/mixin/recording/NetHandlerLoginClientMixin_ReplayMod.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/mixin/recording/NetHandlerLoginClientMixin_ReplayMod.java
+@@ -1,5 +1,5 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.mixin.recording;
+ 
+-import com.moonsworth.lunar.todo.FMLNetworkEvent;
++// import com.moonsworth.lunar.todo.FMLNetworkEvent;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.recording.ReplayModRecording;
+ import net.minecraft.client.network.NetHandlerLoginClient;

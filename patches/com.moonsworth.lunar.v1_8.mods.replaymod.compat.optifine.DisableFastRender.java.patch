@@ -1,0 +1,43 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/compat/optifine/DisableFastRender.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/compat/optifine/DisableFastRender.java
+@@ -1,4 +1,5 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.compat.optifine;
+ 
++import com.moonsworth.lunar.bridge.BridgeManager;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.versions.MCVer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.utils.EventRegistrations;
+@@ -19,10 +20,12 @@
+             return;
+ 
+-        try {
+-            wasFastRender = (boolean) OptifineReflection.gameSettings_ofFastRender.get(mc.gameSettings);
+-            OptifineReflection.gameSettings_ofFastRender.set(mc.gameSettings, false);
+-        } catch (IllegalAccessException e) {
+-            e.printStackTrace();
+-        }
++//        try {
++//            wasFastRender = (boolean) OptifineReflection.gameSettings_ofFastRender.get(mc.gameSettings);
++//            OptifineReflection.gameSettings_ofFastRender.set(mc.gameSettings, false);
++//        } catch (IllegalAccessException e) {
++//            e.printStackTrace();
++//        }
++        wasFastRender = BridgeManager.getOptiFine().get().getConfig().hasFastRender();
++        BridgeManager.getOptiFine().get().getConfig().setFastRender(false);
+     }
+ 
+@@ -34,9 +37,10 @@
+             return;
+ 
+-        try {
+-            OptifineReflection.gameSettings_ofFastRender.set(mc.gameSettings, wasFastRender);
+-        } catch (IllegalAccessException e) {
+-            e.printStackTrace();
+-        }
++//        try {
++//            OptifineReflection.gameSettings_ofFastRender.set(mc.gameSettings, wasFastRender);
++//        } catch (IllegalAccessException e) {
++//            e.printStackTrace();
++//        }
++        BridgeManager.getOptiFine().get().getConfig().setFastRender(wasFastRender);
+     }
+ 

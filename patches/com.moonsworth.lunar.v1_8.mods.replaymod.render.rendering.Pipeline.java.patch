@@ -1,0 +1,15 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/rendering/Pipeline.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/rendering/Pipeline.java
+@@ -1,5 +1,4 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.render.rendering;
+ 
+-import com.replaymod.core.mixin.MinecraftAccessor;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.crash.CrashReport;
+@@ -67,5 +66,5 @@
+         Minecraft mc = MCVer.getMinecraft();
+         while (!capturer.isDone() && !abort) {
+-            if (Display.isCloseRequested() || ((MinecraftAccessor) mc).getCrashReporter() != null) {
++            if (Display.isCloseRequested() || mc.crashReporter != null) {
+                 processService.shutdown();
+                 return;

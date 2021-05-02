@@ -1,0 +1,12 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/replay/events/ReplayDispatchKeypressesEvent.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/replay/events/ReplayDispatchKeypressesEvent.java
+@@ -2,9 +2,7 @@
+ 
+ import com.moonsworth.lunar.client.event.Event;
+-import com.moonsworth.lunar.todo.Cancelable;
+ 
+ public abstract class ReplayDispatchKeypressesEvent extends Event {
+ 
+-    @Cancelable
+     public static class Pre extends ReplayDispatchKeypressesEvent {
+     }

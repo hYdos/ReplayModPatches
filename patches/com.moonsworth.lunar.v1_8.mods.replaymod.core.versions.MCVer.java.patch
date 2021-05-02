@@ -1,0 +1,117 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/core/versions/MCVer.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/core/versions/MCVer.java
+@@ -1,6 +1,11 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.core.versions;
+ 
+-import com.replaymod.core.mixin.GuiScreenAccessor;
+-import com.replaymod.core.mixin.MinecraftAccessor;
++import com.moonsworth.lunar.bridge.BridgeManager;
++import com.moonsworth.lunar.bridge.client.gui.GuiScreenBridge;
++import com.moonsworth.lunar.client.event.EventBus;
++import com.moonsworth.lunar.client.event.impl.gui.EventGuiActionPerformed;
++import com.moonsworth.lunar.client.event.impl.gui.EventInitGui;
++import com.moonsworth.lunar.client.event.impl.gui.EventPostGuiScreen;
++import com.moonsworth.lunar.client.util.BrowserUtil;
+ import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
+ import com.replaymod.replaystudio.us.myles.ViaVersion.api.protocol.ProtocolVersion;
+@@ -32,8 +37,4 @@
+ import com.moonsworth.lunar.client.Lunar;
+ import com.moonsworth.lunar.client.event.impl.gui.EventGuiScreen;
+-import com.moonsworth.lunar.todo.EventBus;
+-import com.moonsworth.lunar.todo.FMLClientHandler;
+-import com.moonsworth.lunar.todo.RenderGameOverlayEvent;
+-import com.moonsworth.lunar.todo.RenderLivingEvent;
+ import net.minecraft.client.gui.GuiButton;
+ import net.minecraft.realms.RealmsSharedConstants;
+@@ -57,5 +58,5 @@
+ import net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator;
+ 
+-import net.minecraftforge.fml.common.Loader;
++// import net.minecraftforge.fml.common.Loader;
+ 
+ import java.io.File;
+@@ -77,5 +78,5 @@
+ 
+     public static boolean isModLoaded(String id) {
+-        return Loader.isModLoaded(id);
++        return false;
+     }
+ 
+@@ -123,37 +124,29 @@
+     }
+ 
+-    public static void addButton(EventGuiScreen.InitGuiEvent event, GuiButton button) {
++    public static void addButton(EventInitGui event, GuiButton button) {
+         getButtonList(event).add(button);
+     }
+ 
+-    public static void removeButton(EventGuiScreen.InitGuiEvent event, GuiButton button) {
++    public static void removeButton(EventInitGui event, GuiButton button) {
+         getButtonList(event).remove(button);
+     }
+ 
+     @SuppressWarnings("unchecked")
+-    public static List<GuiButton> getButtonList(EventGuiScreen.InitGuiEvent event) {
+-        return event.buttonList;
++    public static List<GuiButton> getButtonList(EventInitGui event) {
++        return ((GuiScreen)event.getScreen()).buttonList;
+     }
+ 
+-    public static GuiButton getButton(EventGuiScreen.ActionPerformedEvent event) {
+-        return event.button;
++    public static GuiButton getButton(EventGuiActionPerformed event) {
++        return (GuiButton) event.getButton();
+     }
+ 
+-    public static GuiScreen getGui(EventGuiScreen event) {
+-        return event.gui;
++    public static GuiScreen getGui(EventPostGuiScreen event) {
++        return (GuiScreen) event.getGuiScreen();
+     }
+ 
+-    public static EntityLivingBase getEntity(RenderLivingEvent event) {
+-        return event.entity;
+-    }
+-
+     public static String readString(PacketBuffer buffer, int max) {
+         return buffer.readStringFromBuffer(max);
+     }
+ 
+-    public static RenderGameOverlayEvent.ElementType getType(RenderGameOverlayEvent event) {
+-        return event.type;
+-    }
+-
+     public static Entity getRenderViewEntity(Minecraft mc) {
+         return mc.getRenderViewEntity();
+@@ -265,10 +258,9 @@
+ 
+     public static float getRenderPartialTicks() {
+-        return ((MinecraftAccessor) getMinecraft()).getTimer().renderPartialTicks;
++        return getMinecraft().timer.renderPartialTicks;
+     }
+ 
+-    public static void addButton(GuiScreen screen, GuiButton button) {
+-        GuiScreenAccessor acc = (GuiScreenAccessor) screen;
+-        acc.getButtons().add(button);
++    public static void addButton(GuiScreenBridge screen, GuiButton button) {
++        ((GuiScreen) screen).buttonList.add(button);
+     }
+ 
+@@ -334,9 +326,5 @@
+ 
+     public static void openURL(URI url) {
+-        try {
+-            Desktop.getDesktop().browse(url);
+-        } catch (Throwable e) {
+-            LOGGER.error("Failed to open URL: ", e);
+-        }
++        BrowserUtil.openURL(url);
+     }
+ 
+@@ -355,5 +343,5 @@
+ 
+     public static boolean hasOptifine() {
+-        return FMLClientHandler.instance().hasOptifine();
++        return BridgeManager.getOptiFine().isPresent();
+     }
+ 

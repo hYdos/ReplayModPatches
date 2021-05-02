@@ -1,0 +1,88 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/rendering/VideoRenderer.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/rendering/VideoRenderer.java
+@@ -17,7 +17,4 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.render.metadata.MetadataInjector;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.replay.ReplayHandler;
+-import com.replaymod.core.mixin.MinecraftAccessor;
+-import com.replaymod.core.mixin.TimerAccessor;
+-import com.replaymod.render.mixin.WorldRendererAccessor;
+ import com.replaymod.replaystudio.pathing.path.Keyframe;
+ import com.replaymod.replaystudio.pathing.path.Path;
+@@ -139,5 +136,5 @@
+         drawGui();
+ 
+-        Timer timer = ((MinecraftAccessor) mc).getTimer();
++        Timer timer = mc.timer;
+ 
+         // Play up to one second before starting to render
+@@ -164,10 +161,10 @@
+         }
+ 
+-        ((WorldRendererAccessor) mc.renderGlobal).setRenderEntitiesStartupCounter(0);
++         mc.renderGlobal.renderEntitiesStartupCounter = 0;
+ 
+         renderingPipeline.run();
+ 
+-        if (((MinecraftAccessor) mc).getCrashReporter() != null) {
+-            throw new ReportedException(((MinecraftAccessor) mc).getCrashReporter());
++        if (mc.crashReporter != null) {
++            throw new ReportedException(mc.crashReporter);
+         }
+ 
+@@ -210,5 +207,5 @@
+ 
+         // Updating the timer will cause the timeline player to update the game state
+-        Timer timer = ((MinecraftAccessor) mc).getTimer();
++        Timer timer = mc.timer;
+         timer.updateTimer();
+         int elapsedTicks = timer.elapsedTicks;
+@@ -327,5 +324,5 @@
+         }
+ 
+-        MCVer.playSound(new ResourceLocation("replaymod", "render_success"));
++        MCVer.playSound(new ResourceLocation("lunar", "replaymod/sounds/render_success.ogg"));
+ 
+         try {
+@@ -343,5 +340,5 @@
+ 
+     private void executeTaskQueue() {
+-        Queue<FutureTask<?>> scheduledTasks = ((MinecraftAccessor) mc).getScheduledTasks();
++        Queue<FutureTask<?>> scheduledTasks = mc.scheduledTasks;
+         //noinspection SynchronizationOnLocalVariableOrMethodParameter
+         synchronized (scheduledTasks) {
+@@ -355,14 +352,14 @@
+ 
+     private void tick() {
+-        try {
++//        try {
+             mc.runTick();
+-        } catch (IOException e) {
+-            throw new RuntimeException(e);
+-        }
++//        } catch (IOException e) {
++//            throw new RuntimeException(e);
++//        }
+     }
+ 
+     public boolean drawGui() {
+         do {
+-            if (Display.isCloseRequested() || ((MinecraftAccessor) mc).getCrashReporter() != null) {
++            if (Display.isCloseRequested() || mc.crashReporter != null) {
+                 return false;
+             }
+@@ -385,11 +382,11 @@
+ 
+             // Events are polled on 1.13+ in mainWindow.update which is called later
+-            try {
++//            try {
+                 gui.toMinecraft().handleInput();
+-            } catch (IOException e) {
++//            } catch (IOException e) {
+                 // That's a strange exception from this kind of method O_o
+                 // It isn't actually thrown here, so we'll deal with it the easy way
+-                throw new RuntimeException(e);
+-            }
++//                throw new RuntimeException(e);
++//            }
+ 
+             int mouseX = Mouse.getX() * scaled.getScaledWidth() / mc.displayWidth;

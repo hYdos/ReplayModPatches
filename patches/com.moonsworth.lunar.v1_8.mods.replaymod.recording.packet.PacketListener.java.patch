@@ -1,0 +1,210 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/recording/packet/PacketListener.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/recording/packet/PacketListener.java
+@@ -5,5 +5,7 @@
+ import com.google.common.collect.Lists;
+ import com.google.gson.Gson;
+-import com.moonsworth.lunar.todo.FMLProxyPacket;
++import com.moonsworth.lunar.bridge.BridgeManager;
++import com.moonsworth.lunar.bridge.network.PacketBufferBridge;
++import com.moonsworth.lunar.client.assets.packet.asset.AssetPacket;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.ReplayMod;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.utils.Restrictions;
+@@ -11,5 +13,5 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.versions.MCVer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.editor.gui.MarkerProcessor;
+-import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.container.VanillaGuiScreen;
++import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.container.GuiScreen;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.mixin.recording.SPacketSpawnPlayerAccessor;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.recording.ReplayModRecording;
+@@ -17,5 +19,4 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.recording.gui.GuiSavingReplay;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.recording.handler.ConnectionEventHandler;
+-import com.replaymod.recording.mixin.SPacketSpawnMobAccessor;
+ import com.replaymod.replaystudio.PacketData;
+ import com.replaymod.replaystudio.data.Marker;
+@@ -28,4 +29,6 @@
+ import io.netty.channel.ChannelHandlerContext;
+ import io.netty.channel.ChannelInboundHandlerAdapter;
++import lombok.Getter;
++import lombok.Setter;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.network.play.server.S3FPacketCustomPayload;
+@@ -51,5 +54,4 @@
+ import net.minecraft.network.EnumPacketDirection;
+ 
+-import java.io.DataOutputStream;
+ import java.io.IOException;
+ import java.io.OutputStream;
+@@ -59,5 +61,4 @@
+ import java.util.Collections;
+ import java.util.HashSet;
+-import java.util.List;
+ import java.util.Set;
+ import java.util.UUID;
+@@ -76,5 +77,5 @@
+ 
+     private final ReplayMod core;
+-    private final Path outputPath;
++    @Getter private final Path outputPath;
+     private final ReplayFile replayFile;
+ 
+@@ -94,4 +95,5 @@
+     private EnumConnectionState connectionState = EnumConnectionState.PLAY;
+     private boolean loginPhase = false;
++    @Getter @Setter private boolean recordedThisSession;
+ 
+     /**
+@@ -142,37 +144,43 @@
+     }
+ 
+-    public void save(Packet packet) {
++    public void save(Object object) {
++        if (saveService.isShutdown()) {
++            return;
++        }
++
+         // If we're not on the main thread (i.e. we're on the netty thread), then we need to schedule the saving
+         // to happen on the main thread so we can guarantee correct ordering of inbound and inject packets.
+         // Otherwise, injected packets may end up further down the packet stream than they were supposed to and other
+-        // inbound packets which may rely on the injected packet would behave incorrectly when played back.
++        // inbound packets which may rely on the injected packet would behave incorrectly when played back.\
+         if (!MCVer.isOnMainThread()) {
+-            MCVer.scheduleOnMainThread(() -> save(packet));
++            MCVer.scheduleOnMainThread(() -> save(object));
+             return;
+         }
+-        try {
+-            if (packet instanceof S0CPacketSpawnPlayer) {
+-                UUID uuid = ((S0CPacketSpawnPlayer) packet).getPlayer();
+-                Set<String> uuids = new HashSet<>(Arrays.asList(metaData.getPlayers()));
+-                uuids.add(uuid.toString());
+-                metaData.setPlayers(uuids.toArray(new String[uuids.size()]));
+-                saveMetaData();
+-            }
+ 
+-            if (packet instanceof S03PacketEnableCompression) {
+-                return; // Replay data is never compressed on the packet level
+-            }
+-            if (packet instanceof S46PacketSetCompressionLevel) {
+-                return; // Replay data is never compressed on the packet level
+-            }
++        if (object instanceof S0CPacketSpawnPlayer) {
++            UUID uuid = ((S0CPacketSpawnPlayer) object).getPlayer();
++            Set<String> uuids = new HashSet<>(Arrays.asList(metaData.getPlayers()));
++            uuids.add(uuid.toString());
++            metaData.setPlayers(uuids.toArray(new String[uuids.size()]));
++            saveMetaData();
++        }
+ 
+-            long now = System.currentTimeMillis();
+-            if (serverWasPaused) {
+-                timePassedWhilePaused = now - startTime - lastSentPacket;
+-                serverWasPaused = false;
+-            }
+-            int timestamp = (int) (now - startTime - timePassedWhilePaused);
+-            lastSentPacket = timestamp;
+-            PacketData packetData = getPacketData(timestamp, packet);
++        if (object instanceof S03PacketEnableCompression) {
++            return; // Replay data is never compressed on the packet level
++        }
++        if (object instanceof S46PacketSetCompressionLevel) {
++            return; // Replay data is never compressed on the packet level
++        }
++
++        long now = System.currentTimeMillis();
++        if (serverWasPaused) {
++            timePassedWhilePaused = now - startTime - lastSentPacket;
++            serverWasPaused = false;
++        }
++        int timestamp = (int) (now - startTime - timePassedWhilePaused);
++        lastSentPacket = timestamp;
++
++        try {
++            PacketData packetData = getPacketData(timestamp, object);
+             saveService.submit(() -> {
+                 try {
+@@ -202,5 +210,4 @@
+                 }
+             });
+-
+         } catch (Exception e) {
+             logger.error("Writing packet:", e);
+@@ -271,5 +278,5 @@
+                     logger.error("Saving replay file:", e);
+                     CrashReport crashReport = CrashReport.makeCrashReport(e, "Saving replay file");
+-                    core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(mc.currentScreen), crashReport,
++                    core.runLater(() -> Utils.error(logger, GuiScreen.wrap(mc.currentScreen), crashReport,
+                             guiSavingReplay::close));
+                     return;
+@@ -309,10 +316,10 @@
+                 }
+ 
+-                if (packet instanceof FMLProxyPacket) {
+-                    // This packet requires special handling
+-                    ((FMLProxyPacket) packet).toS3FPackets().forEach(this::save);
+-                    super.channelRead(ctx, msg);
+-                    return;
+-                }
++//                if (packet instanceof FMLProxyPacket) {
++//                    // This packet requires special handling
++//                    ((FMLProxyPacket) packet).toS3FPackets().forEach(this::save);
++//                    super.channelRead(ctx, msg);
++//                    return;
++//                }
+ 
+                 if (packet instanceof S3FPacketCustomPayload) {
+@@ -345,11 +352,36 @@
+     }
+ 
++    private PacketData getPacketData(int timestamp, Object object) throws Exception {
++        if (object instanceof AssetPacket) {
++            return getLunarPacketData(timestamp, (AssetPacket) object);
++        } else {
++            return getPacketData(timestamp, (Packet) object);
++        }
++    }
++
++    private PacketData getLunarPacketData(int timestamp, AssetPacket packet) throws Exception {
++        Integer packetId = AssetPacket.map.get(packet.getClass());
++        if (packetId == null) {
++            throw new IOException("Unknown packet type:" + packet.getClass());
++        }
++        ByteBuf byteBuf = Unpooled.buffer();
++        try {
++            PacketBufferBridge buffer = BridgeManager.getImplementation().initPacketBuffer(byteBuf);
++            packet.write(buffer);
++            return new PacketData(timestamp,
++                    new com.replaymod.replaystudio.protocol.Packet(MCVer.getPacketTypeRegistry(loginPhase), packetId,
++                            com.github.steveice10.netty.buffer.Unpooled.wrappedBuffer(byteBuf.array(),
++                                    byteBuf.arrayOffset(), byteBuf.readableBytes())));
++        } finally {
++            byteBuf.release();
++        }
++    }
++
+     @SuppressWarnings("unchecked")
+     private PacketData getPacketData(int timestamp, Packet packet) throws Exception {
+         if (packet instanceof S0FPacketSpawnMob) {
+             S0FPacketSpawnMob p = (S0FPacketSpawnMob) packet;
+-            SPacketSpawnMobAccessor pa = (SPacketSpawnMobAccessor) p;
+-            if (pa.getDataManager() == null) {
+-                pa.setDataManager(new DataWatcher(null));
++            if (p.field_149043_l == null) {
++                p.field_149043_l = new DataWatcher(null);
+                 if (p.func_149027_c() != null) {
+                     Set<Integer> seen = new HashSet<>();
+@@ -358,5 +390,5 @@
+                         if (!seen.add(wo.getDataValueId()))
+                             continue;
+-                        pa.getDataManager().addObject(wo.getDataValueId(), wo.getObject());
++                        p.field_149043_l.addObject(wo.getDataValueId(), wo.getObject());
+                     }
+                 }
+@@ -406,4 +438,7 @@
+ 
+     public void addMarker(String name, int timestamp) {
++        if (name.equals(MarkerProcessor.MARKER_NAME_END_CUT)) {
++            recordedThisSession = true;
++        }
+         Entity view = getRenderViewEntity(mc);
+ 

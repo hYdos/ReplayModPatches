@@ -1,0 +1,50 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/element/advanced/AbstractGuiTimeline.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/element/advanced/AbstractGuiTimeline.java
+@@ -27,4 +27,7 @@
+ import static com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.utils.Utils.clamp;
+ 
++import com.moonsworth.lunar.bridge.BridgeManager;
++import com.moonsworth.lunar.client.Lunar;
++import com.moonsworth.lunar.client.feature.mod.replaymod.ReplayMod;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.GuiRenderer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.RenderInfo;
+@@ -35,4 +38,5 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.utils.Colors;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.utils.Utils;
++import net.minecraft.util.ResourceLocation;
+ import org.lwjgl.util.Dimension;
+ import org.lwjgl.util.Point;
+@@ -105,11 +109,21 @@
+         int height = size.getHeight();
+ 
+-        renderer.bindTexture(TEXTURE);
++        if (Lunar.getClient().getMods().getReplayMod().getLunarUi().get()) {
++            // Draw Lunars custom replaymod overlay
++            BridgeManager.getGlStateManagerBridge().bridge$color(1F, 1F, 1F, 1F);
++            renderer.bindTexture((ResourceLocation) ReplayMod.LUNAR_UI);
+ 
+-        // We have to increase the border size as there is one pixel row which is part of the border while drawing
+-        // but isn't during position calculations due to shadows
+-        Utils.drawDynamicRect(renderer, width, height, TEXTURE_X, TEXTURE_Y, TEXTURE_WIDTH, TEXTURE_HEIGHT,
+-                BORDER_TOP + 1, BORDER_BOTTOM, BORDER_LEFT + 1, BORDER_RIGHT);
++            Utils.drawDynamicRect(renderer, width + 3, height, TEXTURE_X, TEXTURE_Y, TEXTURE_WIDTH, TEXTURE_HEIGHT * 2,
++                    BORDER_TOP + 3, 0, BORDER_LEFT + 3, BORDER_RIGHT + 6);
++        } else {
++            // Draw the normal replaymod overlay
++            renderer.bindTexture(TEXTURE);
+ 
++            // We have to increase the border size as there is one pixel row which is part of the border while drawing
++            // but isn't during position calculations due to shadows
++            Utils.drawDynamicRect(renderer, width, height, TEXTURE_X, TEXTURE_Y, TEXTURE_WIDTH, TEXTURE_HEIGHT,
++                    BORDER_TOP + 1, BORDER_BOTTOM, BORDER_LEFT + 1, BORDER_RIGHT);
++        }
++
+         if (drawMarkers) {
+             drawMarkers(renderer, size);
+@@ -130,5 +144,5 @@
+             return;
+         int height = size.getHeight();
+-        renderer.bindTexture(TEXTURE);
++        renderer.bindTexture(Lunar.getClient().getMods().getReplayMod().getLunarUi().get() ? (ResourceLocation) ReplayMod.LUNAR_UI : TEXTURE);
+ 
+         int visibleLength = (int) (length * zoom);

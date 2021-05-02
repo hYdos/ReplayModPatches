@@ -1,0 +1,15 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/utils/EventRegistrations.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/utils/EventRegistrations.java
+@@ -2,9 +2,11 @@
+ 
+ import com.moonsworth.lunar.client.Lunar;
++import com.moonsworth.lunar.client.event.Listener;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
++import java.util.concurrent.atomic.AtomicInteger;
+ 
+-public class EventRegistrations {
++public class EventRegistrations implements Listener {
+     private List<EventRegistration<?>> registrations = new ArrayList<>();
+ 

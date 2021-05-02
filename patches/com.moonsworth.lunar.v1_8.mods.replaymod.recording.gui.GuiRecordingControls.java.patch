@@ -1,0 +1,59 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/recording/gui/GuiRecordingControls.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/recording/gui/GuiRecordingControls.java
+@@ -1,4 +1,10 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.recording.gui;
+ 
++import com.moonsworth.lunar.client.Lunar;
++import com.moonsworth.lunar.client.event.impl.EventState;
++import com.moonsworth.lunar.client.event.impl.gui.EventInitGui;
++import com.moonsworth.lunar.client.util.Ref;
++import com.moonsworth.lunar.v1_8.mods.replaymod.core.ReplayModImplementation;
++import lombok.Setter;
+ import net.minecraft.client.gui.GuiIngameMenu;
+ import net.minecraft.client.gui.GuiScreen;
+@@ -27,6 +33,6 @@
+     private ReplayMod core;
+     private PacketListener packetListener;
+-    private boolean paused;
+-    private boolean stopped;
++    @Setter private boolean paused;
++    @Setter private boolean stopped;
+ 
+     private GuiPanel panel = new GuiPanel().setLayout(new HorizontalLayout().setSpacing(4));
+@@ -73,14 +79,26 @@
+     }
+ 
+-    private void updateState() {
++    public void updateState() {
++        buttonStartStop.setDefaultWidgetTexture(true);
++        buttonPauseResume.setDefaultWidgetTexture(true);
++
+         buttonPauseResume.setI18nLabel("replaymod.gui.recording." + (paused ? "resume" : "pause"));
+         buttonStartStop.setI18nLabel("replaymod.gui.recording." + (stopped ? "start" : "stop"));
+ 
+         buttonPauseResume.setEnabled(!stopped);
++
++        ((ReplayModImplementation) Lunar.getClient().getMods().getReplayMod().getReplayModBridge()).setRecordingPaused(paused);
++        ((ReplayModImplementation) Lunar.getClient().getMods().getReplayMod().getReplayModBridge()).setRecordingStopped(stopped);
+     }
+ 
+     @Listen
+-    public void injectIntoIngameMenu(EventGuiScreen.InitGuiEvent.Post event) {
+-        GuiScreen guiScreen = getGui(event);
++    public void injectIntoIngameMenu(EventInitGui event) {
++        if (!Ref.client().getMods().getReplayMod().isEnabled()) {
++            return;
++        }
++        if (event.getState() != EventState.POST) {
++            return;
++        }
++        GuiScreen guiScreen = (GuiScreen) event.getScreen();
+         List<net.minecraft.client.gui.GuiButton> buttonList = MCVer.getButtonList(event);
+         if (!(guiScreen instanceof GuiIngameMenu)) {
+@@ -91,5 +109,5 @@
+                 .<Function<Integer, Integer>>map(it -> (height) -> it.yPosition)
+                 .orElse((height) -> height / 4 + 120 - 16);
+-        VanillaGuiScreen vanillaGui = VanillaGuiScreen.wrap(guiScreen);
++        VanillaGuiScreen vanillaGui = VanillaGuiScreen.setup(guiScreen);
+         vanillaGui
+                 .setLayout(new CustomLayout<com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.container.GuiScreen>(

@@ -1,0 +1,8 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/replay/gui/overlay/GuiEditMarkerPopup.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/replay/gui/overlay/GuiEditMarkerPopup.java
+@@ -16,5 +16,4 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.popup.AbstractGuiPopup;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.utils.Colors;
+-import de.johni0702.minecraft.gui.element.*;
+ import com.replaymod.replaystudio.data.Marker;
+ import java.util.function.Consumer;

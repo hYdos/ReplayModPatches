@@ -1,0 +1,17 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/replay/camera/ClassicCameraController.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/replay/camera/ClassicCameraController.java
+@@ -1,4 +1,5 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.replay.camera;
+ 
++import com.moonsworth.lunar.client.util.MathUtil;
+ import net.minecraft.client.settings.KeyBinding;
+ import org.lwjgl.util.vector.Vector3f;
+@@ -82,7 +83,5 @@
+ 
+     private void setCameraMaximumSpeed(double maxSpeed) {
+-        if (maxSpeed < LOWER_SPEED || maxSpeed > UPPER_SPEED)
+-            return;
+-        MAX_SPEED = maxSpeed;
++        MAX_SPEED = MathUtil.limit(maxSpeed, LOWER_SPEED, UPPER_SPEED);
+         THRESHOLD = MAX_SPEED / 20;
+         DECAY = 5;

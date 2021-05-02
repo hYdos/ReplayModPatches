@@ -1,0 +1,29 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/hooks/ChunkLoadingRenderGlobal.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/hooks/ChunkLoadingRenderGlobal.java
+@@ -4,5 +4,4 @@
+ 
+ import java.lang.reflect.Field;
+-import com.replaymod.render.mixin.WorldRendererAccessor;
+ import net.minecraft.client.renderer.RegionRenderCacheBuilder;
+ import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
+@@ -30,5 +29,5 @@
+         this.hooked = renderGlobal;
+ 
+-        setup(((WorldRendererAccessor) renderGlobal).getRenderDispatcher());
++        setup(renderGlobal.renderDispatcher);
+         install();
+     }
+@@ -80,5 +79,5 @@
+     public void updateChunks() {
+         while (renderDispatcher.runChunkUploads(0)) {
+-            ((WorldRendererAccessor) hooked).setDisplayListEntitiesDirty(true);
++            hooked.setDisplayListEntitiesDirty();
+         }
+ 
+@@ -92,5 +91,5 @@
+         }
+ 
+-        Iterator<RenderChunk> iterator = ((WorldRendererAccessor) hooked).getChunksToUpdate().iterator();
++        Iterator<RenderChunk> iterator = hooked.chunksToUpdate.iterator();
+         while (iterator.hasNext()) {
+             RenderChunk renderchunk = iterator.next();

@@ -1,0 +1,49 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/recording/ReplayModRecording.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/recording/ReplayModRecording.java
+@@ -1,21 +1,19 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.recording;
+ 
+-import com.moonsworth.lunar.todo.NetworkRegistry;
++//import com.moonsworth.lunar.todo.NetworkRegistry;
++import com.moonsworth.lunar.client.Lunar;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.KeyBindingRegistry;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.Module;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.ReplayMod;
+-import com.moonsworth.lunar.v1_8.mods.replaymod.core.utils.Restrictions;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.versions.MCVer.Keyboard;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.recording.handler.ConnectionEventHandler;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.recording.handler.GuiHandler;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.recording.packet.PacketListener;
+-import com.replaymod.recording.mixin.NetworkManagerAccessor;
+ import io.netty.channel.Channel;
+-import io.netty.util.AttributeKey;
++import io.netty.channel.ChannelDuplexHandler;
++import io.netty.channel.ChannelHandler;
+ import net.minecraft.network.NetworkManager;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+-import io.netty.channel.ChannelDuplexHandler;
+-import io.netty.channel.ChannelHandler;
+ 
+ public class ReplayModRecording implements Module {
+@@ -44,5 +42,5 @@
+             public void run() {
+                 PacketListener packetListener = connectionEventHandler.getPacketListener();
+-                if (packetListener != null) {
++                if (packetListener != null && Lunar.getClient().getMods().getReplayMod().getReplayModBridge().isRecording()) {
+                     packetListener.addMarker(null);
+                     core.printInfoToChat("replaymod.chat.addedmarker");
+@@ -58,5 +56,5 @@
+         new GuiHandler(core).register();
+ 
+-        NetworkRegistry.INSTANCE.newChannel(Restrictions.PLUGIN_CHANNEL, new RestrictionsChannelHandler());
++//        NetworkRegistry.INSTANCE.newChannel(Restrictions.PLUGIN_CHANNEL, new RestrictionsChannelHandler());
+     }
+ 
+@@ -66,5 +64,5 @@
+ 
+     public void initiateRecording(NetworkManager networkManager) {
+-        Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
++        Channel channel = networkManager.channel;
+         if (channel.pipeline().get("ReplayModReplay_replaySender") != null)
+             return;

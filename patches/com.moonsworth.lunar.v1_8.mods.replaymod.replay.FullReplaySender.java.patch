@@ -1,0 +1,85 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/replay/FullReplaySender.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/replay/FullReplaySender.java
+@@ -5,12 +5,17 @@
+ import com.google.common.base.Preconditions;
+ import com.google.common.io.Files;
++import com.moonsworth.lunar.bridge.BridgeManager;
++import com.moonsworth.lunar.bridge.network.PacketBufferBridge;
++import com.moonsworth.lunar.client.Lunar;
++import com.moonsworth.lunar.client.assets.packet.asset.AssetPacket;
++import com.moonsworth.lunar.client.debug.DebugType;
+ import com.moonsworth.lunar.client.event.annotation.Listen;
+ import com.moonsworth.lunar.client.event.impl.world.EventTick;
++import com.moonsworth.lunar.client.logger.Logger;
++import com.moonsworth.lunar.client.util.Ref;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.ReplayMod;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.utils.Restrictions;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.utils.EventRegistrations;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.replay.camera.CameraEntity;
+-import com.replaymod.core.mixin.MinecraftAccessor;
+-import com.replaymod.core.mixin.TimerAccessor;
+ import com.replaymod.replaystudio.io.ReplayInputStream;
+ import com.replaymod.replaystudio.replay.ReplayFile;
+@@ -299,8 +304,5 @@
+     private class EventHandler extends EventRegistrations {
+         @Listen
+-        public void onWorldTick(EventTick.ClientTickEvent event) {
+-            // Unfortunately the WorldTickEvent doesn't seem to be emitted on the CLIENT side
+-            if (event.phase != EventTick.Phase.START)
+-                return;
++        public void onWorldTick(EventTick event) {
+ 
+             // Spawning a player into an empty chunk (which we might do with the recording player)
+@@ -371,6 +373,15 @@
+                 }
+             } catch (Exception e) {
+-                // We'd rather not have a failure parsing one packet screw up the whole replay process
+-                e.printStackTrace();
++                try {
++                    AssetPacket p = deserializeLunarPacket((byte[]) msg);
++
++                    if (p != null) {
++                        System.out.println("Processing Lunar Packet " + p.getClass().getSimpleName());
++                        p.process(Lunar.getClient().getAssetsClient());
++                    }
++                } catch (Exception ee) {
++                    // We'd rather not have a failure parsing one packet screw up the whole replay process
++                    e.printStackTrace();
++                }
+             }
+         }
+@@ -378,4 +389,26 @@
+     }
+ 
++    private AssetPacket deserializeLunarPacket(byte[] bytes) throws IOException, IllegalAccessException, InstantiationException {
++        ByteBuf bb = Unpooled.wrappedBuffer(bytes);
++        PacketBufferBridge packetBufferBridge = BridgeManager.getImplementation().initPacketBuffer(bb);
++
++        int id = packetBufferBridge.bridge$readVarIntFromBuffer();
++        Class<? extends AssetPacket> packetClass = AssetPacket.map.inverse().get(id);
++
++        AssetPacket packet = packetClass == null ? null : packetClass.newInstance();
++
++        if (packet == null) {
++            return null;
++        }
++
++        if (Ref.debug(DebugType.ASSET_SERVER)) {
++            Logger.infoC("Assets", "Received: %s", packetClass.getSimpleName());
++        }
++
++        packet.read(packetBufferBridge);
++
++        return packet;
++    }
++
+     private Packet deserializePacket(byte[] bytes) throws IOException, IllegalAccessException, InstantiationException {
+         ByteBuf bb = Unpooled.wrappedBuffer(bytes);
+@@ -611,6 +644,5 @@
+             this.realTimeStart = System.currentTimeMillis() - (long) (lastTimeStamp / d);
+         }
+-        TimerAccessor timer = (TimerAccessor) ((MinecraftAccessor) mc).getTimer();
+-        timer.setTimerSpeed((float) d);
++        mc.timer.timerSpeed = (float) d;
+     }
+ 

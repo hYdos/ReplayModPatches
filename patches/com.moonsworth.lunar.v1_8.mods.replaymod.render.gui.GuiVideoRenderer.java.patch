@@ -1,0 +1,9 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/gui/GuiVideoRenderer.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/gui/GuiVideoRenderer.java
+@@ -24,5 +24,5 @@
+ 
+ public class GuiVideoRenderer extends GuiScreen implements Tickable {
+-    private static final ResourceLocation NO_PREVIEW_TEXTURE = new ResourceLocation("replaymod", "logo.jpg");
++    private static final ResourceLocation NO_PREVIEW_TEXTURE = new ResourceLocation("lunar", "replaymod/logo.jpg");
+ 
+     private final VideoRenderer renderer;

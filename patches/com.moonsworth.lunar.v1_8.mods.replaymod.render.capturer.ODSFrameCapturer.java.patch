@@ -1,0 +1,11 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/capturer/ODSFrameCapturer.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/capturer/ODSFrameCapturer.java
+@@ -27,6 +27,6 @@
+ 
+ public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
+-    private static final ResourceLocation vertexResource = new ResourceLocation("replaymod", "shader/ods.vert");
+-    private static final ResourceLocation fragmentResource = new ResourceLocation("replaymod", "shader/ods.frag");
++    private static final ResourceLocation vertexResource = new ResourceLocation("lunar", "replaymod/shader/ods.vert");
++    private static final ResourceLocation fragmentResource = new ResourceLocation("lunar", "replaymod/shader/ods.frag");
+ 
+     private final CubicPboOpenGlFrameCapturer left, right;

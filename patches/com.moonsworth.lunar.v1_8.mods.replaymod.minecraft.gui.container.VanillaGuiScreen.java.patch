@@ -1,0 +1,129 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/container/VanillaGuiScreen.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/container/VanillaGuiScreen.java
+@@ -2,7 +2,10 @@
+ 
+ import com.moonsworth.lunar.client.event.annotation.Listen;
+-import com.moonsworth.lunar.client.event.impl.gui.EventGuiScreen;
++import com.moonsworth.lunar.client.event.impl.EventState;
++import com.moonsworth.lunar.client.event.impl.gui.*;
++import com.moonsworth.lunar.client.event.impl.input.EventKeyAction;
++import com.moonsworth.lunar.client.event.impl.input.EventMouseAction;
++import com.moonsworth.lunar.client.event.impl.world.EventRenderTick;
+ import com.moonsworth.lunar.client.event.impl.world.EventTick;
+-import com.moonsworth.lunar.todo.EventPriority;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.function.Draggable;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.function.Scrollable;
+@@ -11,4 +14,8 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.versions.MCVer;
+ import java.io.IOException;
++
++import net.minecraft.client.Minecraft;
++import org.lwjgl.input.Keyboard;
++import org.lwjgl.input.Mouse;
+ import org.lwjgl.util.ReadablePoint;
+ 
+@@ -39,4 +46,5 @@
+ 
+             getSuperMcGui().setWorldAndResolution(MCVer.getMinecraft(), mcScreen.width, mcScreen.height);
++            getSuperMcGui().initGui();
+         }
+     }
+@@ -86,6 +94,5 @@
+ 
+     @Override
+-    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown,
+-            boolean shiftDown) {
++    public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
+         eventHandler.handled = false;
+         return false;
+@@ -96,5 +103,5 @@
+         private boolean active;
+ 
+-        @Listen(priority = EventPriority.LOWEST)
++        @Listen
+         public void onGuiClosed(EventGuiScreen event) {
+             unregister();
+@@ -107,6 +114,9 @@
+ 
+         @Listen
+-        public void onGuiInit(EventGuiScreen.InitGuiEvent.Post event) {
+-            net.minecraft.client.gui.GuiScreen screen = event.gui;
++        public void onGuiInit(EventInitGui event) {
++            if (event.getState() != EventState.PRE) {
++                return;
++            }
++            net.minecraft.client.gui.GuiScreen screen = (net.minecraft.client.gui.GuiScreen) event.getScreen();
+             if (screen == mcScreen && active) {
+                 active = false;
+@@ -116,13 +126,12 @@
+         }
+ 
++
+         @Listen
+-        public void onGuiRender(EventGuiScreen.DrawScreenEvent.Post event) {
+-            getSuperMcGui().drawScreen(MCVer.getMouseX(event), MCVer.getMouseY(event), MCVer.getPartialTicks(event));
++        public void onGuiRender(EventGuiDrawScreen event) {
++            getSuperMcGui().drawScreen(event.getMouseX(), event.getMouseY(), event.getPartialTicks());
+         }
+ 
+         @Listen
+-        public void tickOverlay(EventTick.ClientTickEvent event) {
+-            if (event.phase != EventTick.Phase.START)
+-                return;
++        public void tickOverlay(EventTick event) {
+             getSuperMcGui().updateScreen();
+         }
+@@ -133,19 +142,45 @@
+         // so this requires a mixin in any mod making use of it
+         // (see ReplayMod: GuiScreenMixin)
+-        @Listen(priority = EventPriority.LOWEST)
+-        public void onMouseInput(EventGuiScreen.MouseInputEvent.Pre event) throws IOException {
++        @Listen
++        public void onMouseInput(EventGuiMouseAction event) throws IOException {
+             handled = true;
+-            getSuperMcGui().handleMouseInput();
++
++            int var1 = Mouse.getEventX() * getSuperMcGui().width / getSuperMcGui().mc.displayWidth;
++            int var2 = getSuperMcGui().height - Mouse.getEventY() * getSuperMcGui().height / getSuperMcGui().mc.displayHeight - 1;
++            int var3 = Mouse.getEventButton();
++            if (Mouse.getEventButtonState()) {
++                if (getSuperMcGui().mc.gameSettings.touchscreen && getSuperMcGui().touchValue++ > 0) {
++                    return;
++                }
++
++                getSuperMcGui().eventButton = var3;
++                getSuperMcGui().lastMouseEvent = Minecraft.getSystemTime();
++                getSuperMcGui().mouseClicked(var1, var2, getSuperMcGui().eventButton);
++            } else if (var3 != -1) {
++                if (getSuperMcGui().mc.gameSettings.touchscreen && --getSuperMcGui().touchValue > 0) {
++                    return;
++                }
++
++                getSuperMcGui().eventButton = -1;
++                getSuperMcGui().mouseReleased(var1, var2, var3);
++            } else if (getSuperMcGui().eventButton != -1 && getSuperMcGui().lastMouseEvent > 0L) {
++                long var4 = Minecraft.getSystemTime() - getSuperMcGui().lastMouseEvent;
++                getSuperMcGui().mouseClickMove(var1, var2, getSuperMcGui().eventButton, var4);
++            }
+             if (handled) {
+-                event.setCanceled(true);
++                event.setCancelled(true);
+             }
+         }
+ 
+-        @Listen(priority = EventPriority.LOWEST)
+-        public void onKeyboardInput(EventGuiScreen.KeyboardInputEvent.Pre event) throws IOException {
++        @Listen
++        public void onKeyboardInput(EventGuiKeyAction event) throws IOException {
+             handled = true;
+-            getSuperMcGui().handleKeyboardInput();
++            if (Keyboard.getEventKeyState()) {
++                getSuperMcGui().keyTyped(Keyboard.getEventCharacter(), Keyboard.getEventKey());
++            }
++
++            getSuperMcGui().mc.dispatchKeypresses();
+             if (handled) {
+-                event.setCanceled(true);
++                event.setCancelled(true);
+             }
+         }

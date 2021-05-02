@@ -1,0 +1,33 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/core/utils/WrappedTimer.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/core/utils/WrappedTimer.java
+@@ -1,5 +1,4 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.core.utils;
+ 
+-import com.replaymod.core.mixin.TimerAccessor;
+ import net.minecraft.util.Timer;
+ 
+@@ -26,17 +25,15 @@
+ 
+     protected void copy(Timer from, Timer to) {
+-        TimerAccessor fromA = (TimerAccessor) from;
+-        TimerAccessor toA = (TimerAccessor) to;
+ 
+         to.elapsedTicks = from.elapsedTicks;
+         to.renderPartialTicks = from.renderPartialTicks;
+-        toA.setLastSyncSysClock(fromA.getLastSyncSysClock());
++        to.lastSyncSysClock = from.lastSyncSysClock;
+         to.elapsedPartialTicks = from.elapsedPartialTicks;
+-        toA.setTicksPerSecond(fromA.getTicksPerSecond());
+-        toA.setLastHRTime(fromA.getLastHRTime());
+-        toA.setTimerSpeed(fromA.getTimerSpeed());
+-        toA.setLastSyncHRClock(fromA.getLastSyncHRClock());
+-        toA.setCounter(fromA.getCounter());
+-        toA.setTimeSyncAdjustment(fromA.getTimeSyncAdjustment());
++        to.ticksPerSecond = from.ticksPerSecond;
++        to.lastHRTime = from.lastHRTime;
++        to.timerSpeed = from.timerSpeed;
++        to.lastSyncHRClock = from.lastSyncHRClock;
++        to.counter = from.counter;
++        to.timeSyncAdjustment = from.timeSyncAdjustment;
+     }
+ }

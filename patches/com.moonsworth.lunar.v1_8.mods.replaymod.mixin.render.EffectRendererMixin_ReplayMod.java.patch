@@ -1,0 +1,31 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/mixin/render/EffectRendererMixin_ReplayMod.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/mixin/render/EffectRendererMixin_ReplayMod.java
+@@ -15,16 +15,17 @@
+ @Mixin(EffectRenderer.class)
+ public abstract class EffectRendererMixin_ReplayMod {
+-    @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/EntityFX;renderParticle(Lnet/minecraft/client/renderer/WorldRenderer;Lnet/minecraft/entity/Entity;FFFFFF)V"))
+-    private void renderNormalParticle(EntityFX fx, WorldRenderer worldRenderer, Entity view, float partialTicks,
+-            float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
+-        renderParticle(fx, worldRenderer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
+-    }
++    // TODO
++//    @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/EntityFX;renderParticle(Lnet/minecraft/client/renderer/WorldRenderer;Lnet/minecraft/entity/Entity;FFFFFF)V"))
++//    private void renderNormalParticle(EntityFX fx, WorldRenderer worldRenderer, Entity view, float partialTicks,
++//            float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
++//        renderParticle(fx, worldRenderer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
++//    }
++//
++//    @Redirect(method = "renderLitParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/EntityFX;renderParticle(Lnet/minecraft/client/renderer/WorldRenderer;Lnet/minecraft/entity/Entity;FFFFFF)V"))
++//    private void renderLitParticle(EntityFX fx, WorldRenderer worldRenderer, Entity view, float partialTicks,
++//            float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
++//        renderParticle(fx, worldRenderer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
++//    }
+ 
+-    @Redirect(method = "renderLitParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/EntityFX;renderParticle(Lnet/minecraft/client/renderer/WorldRenderer;Lnet/minecraft/entity/Entity;FFFFFF)V"))
+-    private void renderLitParticle(EntityFX fx, WorldRenderer worldRenderer, Entity view, float partialTicks,
+-            float rotX, float rotXZ, float rotZ, float rotYZ, float rotXY) {
+-        renderParticle(fx, worldRenderer, view, partialTicks, rotX, rotXZ, rotZ, rotYZ, rotXY);
+-    }
+-
+     private void renderParticle(EntityFX fx, WorldRenderer worldRenderer, Entity view, float partialTicks, float rotX,
+             float rotXZ, float rotZ, float rotYZ, float rotXY) {

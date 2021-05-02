@@ -1,0 +1,217 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/core/ReplayMod.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/core/ReplayMod.java
+@@ -2,5 +2,16 @@
+ 
+ import com.google.common.net.PercentEscaper;
+-import com.replaymod.core.mixin.MinecraftAccessor;
++import com.moonsworth.lunar.bridge.BridgeManager;
++import com.moonsworth.lunar.bridge.util.ChatColor;
++import com.moonsworth.lunar.client.Lunar;
++import com.moonsworth.lunar.client.event.EventBus;
++import com.moonsworth.lunar.client.event.Listener;
++import com.moonsworth.lunar.client.event.impl.EventState;
++import com.moonsworth.lunar.client.event.impl.world.EventRenderTick;
++import com.moonsworth.lunar.client.gui.notification.Anchor;
++import com.moonsworth.lunar.client.gui.notification.Popup;
++import com.moonsworth.lunar.client.gui.notification.PopupType;
++import com.moonsworth.lunar.client.lang.Translatable;
++import com.moonsworth.lunar.client.util.Ref;
+ import com.replaymod.replaystudio.replay.ReplayFile;
+ import com.replaymod.replaystudio.replay.ZipReplayFile;
+@@ -9,4 +20,5 @@
+ import com.replaymod.replaystudio.util.I18n;
+ import com.replaymod.replaystudio.viaversion.ViaVersionPacketConverter;
++import lombok.Getter;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.util.ResourceLocation;
+@@ -23,10 +35,6 @@
+ import com.google.common.util.concurrent.ListenableFutureTask;
+ import com.moonsworth.lunar.client.event.annotation.Listen;
+-import com.moonsworth.lunar.client.event.impl.world.EventTick;
+ import com.moonsworth.lunar.client.feature.thirdparty.ThirdPartyMod;
+-import com.moonsworth.lunar.client.feature.thirdparty.ThirdPartyMod.EventHandler;
+-import com.moonsworth.lunar.client.feature.thirdparty.ThirdPartyMod.Instance;
+ import com.moonsworth.lunar.client.feature.thirdparty.events.ModEnableEvent;
+-import com.moonsworth.lunar.todo.Configuration;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.compat.ReplayModCompat;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.gui.GuiBackgroundProcesses;
+@@ -48,5 +56,4 @@
+ import net.minecraft.client.settings.GameSettings;
+ 
+-import net.minecraftforge.fml.common.Loader;
+ import java.io.ByteArrayInputStream;
+ import java.io.File;
+@@ -68,20 +75,20 @@
+ 
+ @ThirdPartyMod(modid = ReplayMod.MOD_ID, useMetadata = true, version = "@MOD_VERSION@", acceptedMinecraftVersions = "@MC_VERSION@", acceptableRemoteVersions = "*", clientSideOnly = true, updateJSON = "https://raw.githubusercontent.com/ReplayMod/ReplayMod/master/versions.json", guiFactory = "com.replaymod.core.gui.GuiFactory")
+-public class ReplayMod implements Module {
++public class ReplayMod implements Module, Listener, Translatable {
+ 
+     public static String getMinecraftVersion() {
+-        return Loader.MC_VERSION;
++        return BridgeManager.getMinecraftVersion().getName();
+     }
+ 
+     public static final String MOD_ID = "replaymod";
+ 
+-    public static final ResourceLocation TEXTURE = new ResourceLocation("replaymod", "replay_gui.png");
++    public static final ResourceLocation TEXTURE = new ResourceLocation("lunar", "replaymod/replay_gui.png");
+     public static final int TEXTURE_SIZE = 256;
+-    public static final ResourceLocation LOGO_FAVICON = new ResourceLocation("replaymod", "favicon_logo.png");
++    public static final ResourceLocation LOGO_FAVICON = new ResourceLocation("lunar", "replaymod/favicon_logo.png");
+ 
+     private static final Minecraft mc = MCVer.getMinecraft();
+ 
+-    @Deprecated
+-    public static Configuration config;
++    // @Deprecated
++    // public static Configuration config;
+ 
+     private final KeyBindingRegistry keyBindingRegistry = new KeyBindingRegistry();
+@@ -92,5 +99,5 @@
+ 
+     // The instance of your mod that Forge uses.
+-    @Instance(MOD_ID)
++    // @Instance(MOD_ID)
+     public static ReplayMod instance;
+ 
+@@ -107,13 +114,16 @@
+      * (specifically the code below and MCVer#getProtocolVersion make this assumption)
+      */
+-    private boolean minimalMode;
++    private boolean minimalMode = false;
++    @Getter private ReplayModReplay replayModule;
+ 
+     public ReplayMod() {
++        instance = this;
+         I18n.setI18n(net.minecraft.client.resources.I18n::format);
+ 
+         // Register all RM modules
++        EventBus.getBus().register(this);
+         modules.add(this);
+         modules.add(new ReplayModRecording(this));
+-        ReplayModReplay replayModule = new ReplayModReplay(this);
++        replayModule = new ReplayModReplay(this);
+         modules.add(replayModule);
+         modules.add(new ReplayModRender(this));
+@@ -125,5 +135,5 @@
+     }
+ 
+-    @EventHandler
++    /*@EventHandler
+     public void init(ModEnableEvent event) {
+         config = new Configuration(event.getSuggestedConfigurationFile());
+@@ -131,5 +141,5 @@
+         settingsRegistry.setConfiguration(config);
+         settingsRegistry.save(); // Save default values to disk
+-    }
++    }*/
+ 
+     public KeyBindingRegistry getKeyBindingRegistry() {
+@@ -210,5 +220,5 @@
+ 
+             @Override
+-            protected InputStream getInputStreamByName(String resourceName) throws IOException {
++            public InputStream getInputStreamByName(String resourceName) throws IOException {
+                 try {
+                     return super.getInputStreamByName(resourceName);
+@@ -226,5 +236,5 @@
+ 
+         @SuppressWarnings("unchecked")
+-        List<IResourcePack> defaultResourcePacks = ((MinecraftAccessor) mc).getDefaultResourcePacks();
++        List<IResourcePack> defaultResourcePacks = mc.defaultResourcePacks;
+         defaultResourcePacks.add(jGuiResourcePack);
+ 
+@@ -232,6 +242,7 @@
+     }
+ 
+-    @EventHandler
++    @Listen
+     public void init(ModEnableEvent event) {
++        System.out.println("INIT ReplayMod");
+         modules.forEach(Module::initCommon);
+         modules.forEach(Module::initClient);
+@@ -257,6 +268,4 @@
+         }
+ 
+-        testIfMoeshAndExitMinecraft();
+-
+         runPostStartup(() -> {
+             final long DAYS = 24 * 60 * 60 * 1000;
+@@ -355,4 +364,6 @@
+             }
+         });
++
++        Ref.client().getMods().getReplayMod().setReplayModBridge(new ReplayModImplementation(this));
+     }
+ 
+@@ -407,6 +418,6 @@
+             FML_BUS.register(new Object() {
+                 @Listen
+-                public void onRenderTick(EventTick.RenderTickEvent event) {
+-                    if (event.phase == EventTick.Phase.START) {
++                public void onRenderTick(EventRenderTick event) {
++                    if (event.getState() == EventState.PRE) {
+                         FML_BUS.unregister(this);
+                         defer.run();
+@@ -416,5 +427,5 @@
+             return;
+         }
+-        Queue<FutureTask<?>> tasks = ((MinecraftAccessor) mc).getScheduledTasks();
++        Queue<FutureTask<?>> tasks = mc.scheduledTasks;
+         //noinspection SynchronizationOnLocalVariableOrMethodParameter
+         synchronized (tasks) {
+@@ -435,13 +446,7 @@
+ 
+     public String getVersion() {
+-        return Loader.instance().getIndexedModList().get(MOD_ID).getVersion();
++        return Lunar.getClient().getThirdPartyMods().get("replaymod").version();
+     }
+ 
+-    private void testIfMoeshAndExitMinecraft() {
+-        if ("currentPlayer".equals("Moesh")) {
+-            System.exit(-1);
+-        }
+-    }
+-
+     public Minecraft getMinecraft() {
+         return mc;
+@@ -458,15 +463,18 @@
+     private void printToChat(boolean warning, String message, Object... args) {
+         if (getSettingsRegistry().get(Setting.NOTIFICATIONS)) {
+-            // Some nostalgia: "§8[§6Replay Mod§8]§r Your message goes here"
+-            ChatStyle coloredDarkGray = new ChatStyle().setColor(EnumChatFormatting.DARK_GRAY);
+-            ChatStyle coloredGold = new ChatStyle().setColor(EnumChatFormatting.GOLD);
+-            IChatComponent text = new ChatComponentText("[").setChatStyle(coloredDarkGray)
+-                    .appendSibling(new ChatComponentTranslation("replaymod.title").setChatStyle(coloredGold))
+-                    .appendSibling(new ChatComponentText("] "))
+-                    .appendSibling(new ChatComponentTranslation(message, args).setChatStyle(new ChatStyle()
+-                            .setColor(warning ? EnumChatFormatting.RED : EnumChatFormatting.DARK_GREEN)));
+-            // Send message to chat GUI
+-            // The ingame GUI is initialized at startup, therefore this is possible before the client is connected
+-            mc.ingameGUI.getChatGUI().printChatMessage(text);
++            Popup popup = new Popup(warning? PopupType.WARNING.getIcon() : PopupType.INFO.getIcon(), get("replaymod.title"), get(message, args));
++            popup.setAnchor(Anchor.BOTTOM_RIGHT);
++            Ref.client().getPopupManager().add(popup);
++//            // Some nostalgia: "§8[§6Replay Mod§8]§r Your message goes here"
++//            ChatStyle coloredDarkGray = new ChatStyle().setColor(EnumChatFormatting.DARK_GRAY);
++//            ChatStyle coloredGold = new ChatStyle().setColor(EnumChatFormatting.GOLD);
++//            IChatComponent text = new ChatComponentText("[").setChatStyle(coloredDarkGray)
++//                    .appendSibling(new ChatComponentTranslation(get("replaymod.title")).setChatStyle(coloredGold))
++//                    .appendSibling(new ChatComponentText("] "))
++//                    .appendSibling(new ChatComponentTranslation(get(message, args)).setChatStyle(new ChatStyle()
++//                            .setColor(warning ? EnumChatFormatting.RED : EnumChatFormatting.DARK_GREEN)));
++//            // Send message to chat GUI
++//            // The ingame GUI is initialized at startup, therefore this is possible before the client is connected
++//            mc.ingameGUI.getChatGUI().printChatMessage(text);
+         }
+     }
+@@ -497,3 +505,8 @@
+                 getCachePathForReplay(output).toFile());
+     }
++
++    @Override
++    public String getLanguagePath() {
++        return "replaymod";
++    }
+ }

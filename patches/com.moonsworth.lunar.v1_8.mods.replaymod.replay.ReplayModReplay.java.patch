@@ -1,0 +1,50 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/replay/ReplayModReplay.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/replay/ReplayModReplay.java
+@@ -17,6 +17,4 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.replay.gui.screen.GuiModCompatWarning;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.replay.handler.GuiHandler;
+-import com.replaymod.core.mixin.MinecraftAccessor;
+-import com.replaymod.core.utils.ModCompat;
+ import com.replaymod.replaystudio.data.Marker;
+ import com.replaymod.replaystudio.replay.ReplayFile;
+@@ -158,6 +156,5 @@
+         });
+ 
+-        MinecraftAccessor mc = (MinecraftAccessor) core.getMinecraft();
+-        mc.setTimer(new InputReplayTimer(mc.getTimer(), this));
++        getMinecraft().timer = new InputReplayTimer(getMinecraft().timer, this);
+ 
+         new GuiHandler(this).register();
+@@ -177,21 +174,9 @@
+             replayHandler.endReplay();
+         }
+-        if (checkModCompat) {
+-            ModCompat.ModInfoDifference modDifference = new ModCompat.ModInfoDifference(replayFile.getModInfo());
+-            if (!modDifference.getMissing().isEmpty() || !modDifference.getDiffering().isEmpty()) {
+-                GuiModCompatWarning screen = new GuiModCompatWarning(modDifference);
+-                screen.loadButton.onClick(() -> {
+-                    try {
+-                        startReplay(replayFile, false, asyncMode);
+-                    } catch (IOException e) {
+-                        e.printStackTrace();
+-                    }
+-                });
+-                screen.display();
+-                return null;
+-            }
+-        }
+         replayHandler = new ReplayHandler(replayFile, asyncMode);
+ 
++        // Lunar: Calling this here will add all the ReplayViewer specific keys back to the active KeyBindings
++        KeyBinding.resetKeyBindingArrayAndHash();
++
+         return replayHandler;
+     }
+@@ -199,4 +184,7 @@
+     public void forcefullyStopReplay() {
+         replayHandler = null;
++
++        // Lunar: Calling this here will remove all the ReplayViewer specific keys from the active KeyBindings
++        KeyBinding.resetKeyBindingArrayAndHash();
+     }
+ 

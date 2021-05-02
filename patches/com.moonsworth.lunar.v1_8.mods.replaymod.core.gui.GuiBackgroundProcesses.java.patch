@@ -1,0 +1,39 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/core/gui/GuiBackgroundProcesses.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/core/gui/GuiBackgroundProcesses.java
+@@ -6,5 +6,10 @@
+ 
+ import com.moonsworth.lunar.client.event.annotation.Listen;
++import com.moonsworth.lunar.client.event.impl.EventState;
+ import com.moonsworth.lunar.client.event.impl.gui.EventGuiScreen;
++import com.moonsworth.lunar.client.event.impl.gui.EventInitGui;
++import com.moonsworth.lunar.client.gui.framework.LCUI;
++import com.moonsworth.lunar.client.gui.framework.mainmenu.MainMenuBaseLCUI;
++import com.moonsworth.lunar.client.gui.framework.mainmenu.MainMenuLCUI;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.GuiRenderer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.RenderInfo;
+@@ -17,4 +22,5 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.layout.VerticalLayout;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.utils.EventRegistrations;
++import com.moonsworth.lunar.v1_8.wrapper.client.gui.ScreenInjector;
+ import org.lwjgl.util.Dimension;
+ import org.lwjgl.util.ReadableDimension;
+@@ -24,10 +30,16 @@
+ 
+     @Listen
+-    public void onGuiInit(EventGuiScreen.InitGuiEvent.Post event) {
+-        net.minecraft.client.gui.GuiScreen guiScreen = getGui(event);
++    public void onGuiInit(EventInitGui event) {
++        if (event.getState() != EventState.POST) {
++            return;
++        }
++        net.minecraft.client.gui.GuiScreen guiScreen = (net.minecraft.client.gui.GuiScreen) event.getScreen();
++        if (guiScreen instanceof ScreenInjector && ((ScreenInjector) guiScreen).getCustomScreen() instanceof LCUI && !(((ScreenInjector) guiScreen).getCustomScreen() instanceof MainMenuBaseLCUI)) {
++            return;
++        }
+         if (guiScreen != getMinecraft().currentScreen)
+             return; // people tend to construct GuiScreens without opening them
+ 
+-        VanillaGuiScreen vanillaGui = VanillaGuiScreen.wrap(guiScreen);
++        VanillaGuiScreen vanillaGui = VanillaGuiScreen.setup(guiScreen);
+         vanillaGui.setLayout(new CustomLayout<GuiScreen>(vanillaGui.getLayout()) {
+             @Override

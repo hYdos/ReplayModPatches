@@ -1,0 +1,43 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/replay/InputReplayTimer.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/replay/InputReplayTimer.java
+@@ -34,18 +34,18 @@
+         if (mod.getReplayHandler() != null && mc.theWorld != null && mc.thePlayer != null) {
+             if (mc.currentScreen != null) {
+-                try {
++//                try {
+                     mc.currentScreen.handleInput();
+-                } catch (IOException e) { // *SIGH*
+-                    e.printStackTrace();
+-                }
++//                } catch (IOException e) { // *SIGH*
++//                    e.printStackTrace();
++//                }
+             }
+             if (mc.currentScreen == null || mc.currentScreen.allowUserInput) {
+                 // 1.8.9 and below has one giant tick function, so we try to only do keyboard & mouse as far as possible
+                 ((MCVer.MinecraftMethodAccessor) mc).replayModSetEarlyReturnFromRunTick(true);
+-                try {
++//                try {
+                     mc.runTick();
+-                } catch (IOException e) { // *SIGH*
+-                    e.printStackTrace();
+-                }
++//                } catch (IOException e) { // *SIGH*
++//                    e.printStackTrace();
++//                }
+                 ((MCVer.MinecraftMethodAccessor) mc).replayModSetEarlyReturnFromRunTick(false);
+             }
+@@ -60,11 +60,8 @@
+                 if (cameraEntity != null) {
+                     CameraController controller = cameraEntity.getCameraController();
+-                    while (wheel > 0) {
++                    if (wheel > 0) {
+                         controller.increaseSpeed();
+-                        wheel--;
+-                    }
+-                    while (wheel < 0) {
++                    } else {
+                         controller.decreaseSpeed();
+-                        wheel++;
+                     }
+                 }

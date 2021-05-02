@@ -1,0 +1,48 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/extras/FullBrightness.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/extras/FullBrightness.java
+@@ -2,5 +2,6 @@
+ 
+ import com.moonsworth.lunar.client.event.annotation.Listen;
+-import com.moonsworth.lunar.client.event.impl.world.EventTick;
++import com.moonsworth.lunar.client.event.impl.EventState;
++import com.moonsworth.lunar.client.event.impl.world.EventRenderTick;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.ReplayMod;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.versions.MCVer.Keyboard;
+@@ -50,17 +51,18 @@
+ 
+     public Type getType() {
+-        String str = core.getSettingsRegistry().get(Setting.FULL_BRIGHTNESS);
+-        for (Type type : Type.values()) {
+-            if (type.toString().equals(str)) {
+-                return type;
+-            }
+-        }
++//        String str = core.getSettingsRegistry().get(Setting.FULL_BRIGHTNESS);
++//        for (Type type : Type.values()) {
++//            if (type.toString().equals(str)) {
++//                return type;
++//            }
++//        }
+         return Type.Gamma;
+     }
+ 
+     @Listen
+-    public void preRender(EventTick.RenderTickEvent event) {
+-        if (event.phase != EventTick.Phase.START)
++    public void preRender(EventRenderTick event) {
++        if (event.getState() != EventState.PRE) {
+             return;
++        }
+         if (active && module.getReplayHandler() != null) {
+             Type type = getType();
+@@ -78,7 +80,8 @@
+ 
+     @Listen
+-    public void postRender(EventTick.RenderTickEvent event) {
+-        if (event.phase != EventTick.Phase.END)
++    public void postRender(EventRenderTick event) {
++        if (event.getState() != EventState.POST) {
+             return;
++        }
+         if (active && module.getReplayHandler() != null) {
+             Type type = getType();

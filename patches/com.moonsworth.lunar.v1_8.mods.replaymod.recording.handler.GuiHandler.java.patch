@@ -1,0 +1,43 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/recording/handler/GuiHandler.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/recording/handler/GuiHandler.java
+@@ -1,5 +1,7 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.recording.handler;
+ 
+-import com.replaymod.recording.mixin.AddServerScreenAccessor;
++import com.moonsworth.lunar.client.event.impl.EventState;
++import com.moonsworth.lunar.client.event.impl.gui.EventInitGui;
++import com.moonsworth.lunar.client.util.Ref;
+ import net.minecraft.client.gui.GuiScreenAddServer;
+ import net.minecraft.client.gui.GuiMultiplayer;
+@@ -35,6 +37,12 @@
+ 
+     @Listen
+-    public void onGuiInit(EventGuiScreen.InitGuiEvent.Post event) {
+-        net.minecraft.client.gui.GuiScreen gui = getGui(event);
++    public void onGuiInit(EventInitGui event) {
++        if (!Ref.client().getMods().getReplayMod().isEnabled()) {
++            return;
++        }
++        if (event.getState() != EventState.POST) {
++            return;
++        }
++        net.minecraft.client.gui.GuiScreen gui = (net.minecraft.client.gui.GuiScreen) event.getScreen();
+         if (gui instanceof GuiSelectWorld || gui instanceof GuiMultiplayer) {
+             boolean sp = gui instanceof GuiSelectWorld;
+@@ -50,5 +58,5 @@
+             });
+ 
+-            VanillaGuiScreen vanillaGui = VanillaGuiScreen.wrap(gui);
++            VanillaGuiScreen vanillaGui = VanillaGuiScreen.setup(gui);
+             vanillaGui.setLayout(new CustomLayout<GuiScreen>(vanillaGui.getLayout()) {
+                 @Override
+@@ -61,7 +69,7 @@
+ 
+         if (gui instanceof GuiScreenAddServer) {
+-            VanillaGuiScreen vanillaGui = VanillaGuiScreen.wrap(gui);
++            VanillaGuiScreen vanillaGui = VanillaGuiScreen.setup(gui);
+             GuiButton replayButton = new GuiReplayButton().onClick(() -> {
+-                ServerData serverInfo = ((AddServerScreenAccessor) gui).getServer();
++                ServerData serverInfo = ((GuiScreenAddServer) gui).serverData;
+                 ServerInfoExt serverInfoExt = ServerInfoExt.from(serverInfo);
+                 Boolean state = serverInfoExt.getAutoRecording();

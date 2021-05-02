@@ -1,0 +1,230 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/core/ReplayModImplementation.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/core/ReplayModImplementation.java
+@@ -1,0 +1,227 @@
++package com.moonsworth.lunar.v1_8.mods.replaymod.core;
++
++import com.google.common.collect.ImmutableSet;
++import com.moonsworth.lunar.bridge.client.gui.GuiScreenBridge;
++import com.moonsworth.lunar.bridge.client.settings.KeyBindingBridge;
++import com.moonsworth.lunar.bridge.util.ResourceLocationBridge;
++import com.moonsworth.lunar.client.assets.packet.asset.AssetPacket;
++import com.moonsworth.lunar.client.feature.thirdparty.replaymod.ReplayModBridge;
++import com.moonsworth.lunar.client.logger.Logger;
++import com.moonsworth.lunar.v1_8.mods.replaymod.editor.gui.MarkerProcessor;
++import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.container.AbstractGuiOverlay;
++import com.moonsworth.lunar.v1_8.mods.replaymod.recording.ReplayModRecording;
++import com.moonsworth.lunar.v1_8.mods.replaymod.recording.ServerInfoExt;
++import com.moonsworth.lunar.v1_8.mods.replaymod.recording.Setting;
++import com.moonsworth.lunar.v1_8.mods.replaymod.recording.gui.GuiRecordingControls;
++import com.moonsworth.lunar.v1_8.mods.replaymod.recording.handler.ConnectionEventHandler;
++import com.moonsworth.lunar.v1_8.mods.replaymod.recording.packet.PacketListener;
++import com.moonsworth.lunar.v1_8.mods.replaymod.replay.ReplayModReplay;
++import com.moonsworth.lunar.v1_8.mods.replaymod.replay.gui.overlay.GuiReplayOverlay;
++import com.moonsworth.lunar.v1_8.mods.replaymod.replay.gui.screen.GuiReplayViewer;
++import lombok.RequiredArgsConstructor;
++import lombok.Setter;
++import net.minecraft.client.Minecraft;
++import net.minecraft.client.multiplayer.ServerData;
++
++import java.io.IOException;
++import java.nio.file.Files;
++import java.util.Set;
++import java.util.stream.Collectors;
++
++import static com.moonsworth.lunar.v1_8.mods.replaymod.recording.Setting.INDICATOR;
++
++@RequiredArgsConstructor
++public class ReplayModImplementation implements ReplayModBridge {
++
++    private final ReplayMod replayMod;
++
++    @Setter
++    private boolean recordingPaused, recordingStopped;
++
++    @Override
++    public void handleMainMenuButton() {
++        new GuiReplayViewer(replayMod.getReplayModule()).display();
++    }
++
++    @Override
++    public boolean isViewingReplay() {
++        return ReplayModReplay.instance.getReplayHandler() != null;
++    }
++
++    @Override
++    public boolean isStopped() {
++        return recordingStopped;
++    }
++
++    @Override
++    public boolean isPaused() {
++        return recordingPaused;
++    }
++
++    @Override
++    public boolean isRecording() {
++        return ReplayModRecording.instance.getConnectionEventHandler().getPacketListener() != null && !isStopped();
++    }
++
++    @Override
++    public boolean showRecordingIndicator() {
++        return replayMod.getSettingsRegistry().get(INDICATOR);
++    }
++
++    @Override
++    public ResourceLocationBridge getReplayModTexture() {
++        return (ResourceLocationBridge) ReplayMod.TEXTURE;
++    }
++
++    @Override
++    public int getTextureSize() {
++        return ReplayMod.TEXTURE_SIZE;
++    }
++
++    @Override
++    public void onEnable() {
++        if (ReplayModRecording.instance.getConnectionEventHandler().getPacketListener() == null) {
++            return;
++        }
++        boolean autoStart = replayMod.getSettingsRegistry().get(Setting.AUTO_START_RECORDING);
++        if (Minecraft.getMinecraft().getCurrentServerData() != null) {
++            ServerData serverInfo = Minecraft.getMinecraft().getCurrentServerData();
++
++            Boolean autoStartServer = ServerInfoExt.from(serverInfo).getAutoRecording();
++            if (autoStartServer != null) {
++                autoStart = autoStartServer;
++            }
++        } else if (!ReplayModRecording.instance.getConnectionEventHandler().isLocal()) {
++            Logger.info("Recording not started as the world is neither local nor remote (probably a replay).");
++            return;
++        }
++        if (!autoStart) {
++            return;
++        }
++        ReplayModRecording.instance.getConnectionEventHandler().getPacketListener().addMarker(MarkerProcessor.MARKER_NAME_END_CUT);
++        replayMod.printInfoToChat("replaymod.chat.recordingstarted");
++        ReplayModRecording.instance.getConnectionEventHandler().getGuiControls().setStopped(false);
++        ReplayModRecording.instance.getConnectionEventHandler().getGuiControls().setPaused(false);
++        ReplayModRecording.instance.getConnectionEventHandler().getGuiControls().updateState();
++    }
++
++    @Override
++    public void onDisable() {
++        ConnectionEventHandler connectionEventHandler = ReplayModRecording.instance.getConnectionEventHandler();
++        if (connectionEventHandler.getPacketListener() == null) {
++            return;
++        }
++        int timestamp = (int) connectionEventHandler.getPacketListener().getCurrentDuration();
++        if (!connectionEventHandler.getGuiControls().isPaused()) {
++            connectionEventHandler.getPacketListener().addMarker(MarkerProcessor.MARKER_NAME_START_CUT, timestamp);
++        }
++        connectionEventHandler.getPacketListener().addMarker(MarkerProcessor.MARKER_NAME_SPLIT, timestamp + 1);
++        ReplayModRecording.instance.getConnectionEventHandler().getGuiControls().setStopped(true);
++    }
++
++    @Override
++    public void handleAssetPacket(AssetPacket packet) {
++        if (ReplayModRecording.instance.getConnectionEventHandler().getPacketListener() == null) {
++            return;
++        }
++
++        ReplayModRecording.instance.getConnectionEventHandler().getPacketListener().save(packet);
++    }
++
++    private static final Set<Class> HIDE_BRAND_ON = ImmutableSet.of(
++            GuiReplayViewer.class,
++            AbstractGuiOverlay.UserInputGuiScreen.class,
++            GuiReplayOverlay.class
++    );
++
++    @Override
++    public boolean shouldRenderBrand(GuiScreenBridge guiScreenBridge) {
++        return !HIDE_BRAND_ON.contains(guiScreenBridge.getClass());
++    }
++
++    @Override
++    public Set<KeyBindingBridge> getKeyBindings() {
++        return (Set<KeyBindingBridge>) (Object) ReplayMod.instance.getKeyBindingRegistry().getBindings().values().stream().map(b -> b.keyBinding).collect(Collectors.toSet());
++    }
++
++    /*
++     * Resumes a previously paused recording. This method will do nothing if there isn't an existing recording that has been paused.
++     */
++    @Override
++    public void resumeRecording() {
++        if (ReplayModRecording.instance.getConnectionEventHandler().getPacketListener() == null) {
++            return;
++        }
++        ReplayModRecording.instance.getConnectionEventHandler().getPacketListener().addMarker(MarkerProcessor.MARKER_NAME_END_CUT);
++        replayMod.printInfoToChat("replaymod.chat.recordingresumed");
++        ReplayModRecording.instance.getConnectionEventHandler().getGuiControls().setPaused(false);
++        ReplayModRecording.instance.getConnectionEventHandler().getGuiControls().updateState();
++    }
++
++
++    /*
++     * Starts a new recording.
++     */
++    @Override
++    public void startRecording() {
++        if (ReplayModRecording.instance.getConnectionEventHandler().getPacketListener() == null) {
++            return;
++        }
++        ReplayModRecording.instance.getConnectionEventHandler().getGuiControls().setPaused(false);
++        ReplayModRecording.instance.getConnectionEventHandler().getPacketListener().addMarker(MarkerProcessor.MARKER_NAME_END_CUT);
++        replayMod.printInfoToChat("replaymod.chat.recordingstarted");
++        ReplayModRecording.instance.getConnectionEventHandler().getGuiControls().setStopped(false);
++        ReplayModRecording.instance.getConnectionEventHandler().getGuiControls().updateState();
++    }
++
++    /*
++     * Stops an on going recording. This method will do nothing if there isn't a recording occurring.
++     */
++    @Override
++    public void stopRecording() {
++        PacketListener packetListener = ReplayModRecording.instance.getConnectionEventHandler().getPacketListener();
++        if (packetListener == null) {
++            return;
++        }
++        replayMod.printInfoToChat("replaymod.chat.recordingstopped");
++        int timestamp = (int) packetListener.getCurrentDuration();
++        GuiRecordingControls guiControls = ReplayModRecording.instance.getConnectionEventHandler().getGuiControls();
++        if (!guiControls.isPaused()) {
++            packetListener.addMarker(MarkerProcessor.MARKER_NAME_START_CUT, timestamp);
++        }
++        packetListener.addMarker(MarkerProcessor.MARKER_NAME_SPLIT, timestamp + 1);
++        guiControls.setStopped(true);
++        guiControls.updateState();
++    }
++
++    /*
++     * Pauses a recording if one is occurring. This method will do nothing if there isn't a recording occurring.
++     */
++    @Override
++    public void pauseRecording() {
++        if (ReplayModRecording.instance.getConnectionEventHandler().getPacketListener() == null) {
++            return;
++        }
++        ReplayModRecording.instance.getConnectionEventHandler().getPacketListener().addMarker(MarkerProcessor.MARKER_NAME_START_CUT);
++        replayMod.printInfoToChat("replaymod.chat.recordingpaused");
++        ReplayModRecording.instance.getConnectionEventHandler().getGuiControls().setPaused(true);
++        ReplayModRecording.instance.getConnectionEventHandler().getGuiControls().updateState();
++    }
++
++    @Override
++    public void noRecover() {
++        PacketListener packetListener =  ReplayModRecording.instance.getConnectionEventHandler().getPacketListener();
++        if (packetListener == null || packetListener.getOutputPath() == null) {
++            return;
++        }
++        if (packetListener.isRecordedThisSession()) {
++            return;
++        }
++        try {
++            Files.createFile(packetListener.getOutputPath().resolveSibling(packetListener.getOutputPath().getFileName() + ".no_recover"));
++        } catch (IOException exception) {
++            exception.printStackTrace();
++        }
++    }
++}
++

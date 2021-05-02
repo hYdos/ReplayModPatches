@@ -1,0 +1,33 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/versions/MCVer.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/versions/MCVer.java
+@@ -16,5 +16,4 @@
+ 
+ import com.moonsworth.lunar.client.event.impl.gui.EventGuiScreen;
+-import com.moonsworth.lunar.todo.RenderGameOverlayEvent;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.GuiRenderer;
+ import java.util.concurrent.Callable;
+@@ -95,24 +94,4 @@
+     }
+ 
+-    public static RenderGameOverlayEvent.ElementType getType(RenderGameOverlayEvent event) {
+-        return event.type;
+-    }
+-
+-    public static float getPartialTicks(RenderGameOverlayEvent event) {
+-        return event.partialTicks;
+-    }
+-
+-    public static float getPartialTicks(EventGuiScreen.DrawScreenEvent.Post event) {
+-        return event.renderPartialTicks;
+-    }
+-
+-    public static int getMouseX(EventGuiScreen.DrawScreenEvent.Post event) {
+-        return event.mouseX;
+-    }
+-
+-    public static int getMouseY(EventGuiScreen.DrawScreenEvent.Post event) {
+-        return event.mouseY;
+-    }
+-
+     public static void setClipboardString(String text) {
+         GuiScreen.setClipboardString(text);

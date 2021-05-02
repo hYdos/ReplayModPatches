@@ -1,0 +1,114 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/container/AbstractGuiScreen.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/minecraft/gui/container/AbstractGuiScreen.java
+@@ -25,4 +25,8 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.container;
+ 
++import com.moonsworth.lunar.bridge.BridgeManager;
++import com.moonsworth.lunar.client.Lunar;
++import com.moonsworth.lunar.client.management.managers.Fonts;
++import com.moonsworth.lunar.client.util.Ref;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.GuiRenderer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.MinecraftGuiRenderer;
+@@ -41,5 +45,4 @@
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.versions.MCVer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.versions.MatrixStack;
+-import de.johni0702.minecraft.gui.function.*;
+ import net.minecraft.crash.CrashReport;
+ import net.minecraft.crash.CrashReportCategory;
+@@ -56,5 +59,5 @@
+ import java.io.IOException;
+ 
+-public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends AbstractGuiContainer<T> {
++public abstract class AbstractGuiScreen<T extends AbstractGuiScreen<T>> extends AbstractGuiContainer<T> implements Tickable {
+ 
+     private final MinecraftGuiScreen wrapped = new MinecraftGuiScreen();
+@@ -99,14 +102,25 @@
+                 case NONE :
+                     break;
++                case DIRT :
++                    if (!Lunar.getClient().getMods().getReplayMod().getLunarUi().get()) {
++                        wrapped.drawBackground(0);
++                        break;
++                    }
+                 case DEFAULT :
+-                    wrapped.drawDefaultBackground();
+-                    break;
++                    if (Lunar.getClient().getMods().getReplayMod().getLunarUi().get()) {
++                        if (Ref.world() == null) {
++                            BridgeManager.getGlStateManagerBridge().bridge$disableAlpha();
++                            BridgeManager.getRenderHelperUtilBridge().bridge$renderSkybox(size.getWidth(), size.getHeight(), lunarPanoramaTimer, renderInfo.getPartialTick());
++                            BridgeManager.getGlStateManagerBridge().bridge$enableAlpha();
++                            break;
++                        }
++                    } else {
++                        wrapped.drawDefaultBackground();
++                        break;
++                    }
+                 case TRANSPARENT :
+                     int top = 0xc0_10_10_10, bottom = 0xd0_10_10_10;
+                     renderer.drawRect(0, 0, size.getWidth(), size.getHeight(), top, top, bottom, bottom);
+                     break;
+-                case DIRT :
+-                    wrapped.drawBackground(0);
+-                    break;
+             }
+             if (title != null) {
+@@ -114,5 +128,11 @@
+                 int x = screenSize.getWidth() / 2 - titleSize.getWidth() / 2;
+                 OffsetGuiRenderer eRenderer = new OffsetGuiRenderer(renderer, new Point(x, 10), new Dimension(0, 0));
+-                title.draw(eRenderer, titleSize, renderInfo);
++
++                if (Lunar.getClient().getMods().getReplayMod().getLunarUi().get()) {
++                    final String text = title.getText().toUpperCase().replace("", " ").trim();
++                    Fonts.getRoboto14Bold().drawCenteredString(text, screenSize.getWidth() / 2F, 13, 0xFFFFFFFF);
++                } else {
++                    title.draw(eRenderer, titleSize, renderInfo);
++                }
+             }
+         }
+@@ -154,5 +174,12 @@
+     }
+ 
++    private int lunarPanoramaTimer;
++
+     @Override
++    public void tick() {
++        lunarPanoramaTimer++;
++    }
++
++    @Override
+     public ReadableDimension getMinSize() {
+         return screenSize;
+@@ -218,5 +245,5 @@
+ 
+         @Override
+-        protected void keyTyped(char typedChar, int keyCode) throws IOException {
++        public void keyTyped(char typedChar, int keyCode) {
+             if (!forEach(Typeable.class).typeKey(MouseUtils.getMousePos(), keyCode, typedChar, isCtrlKeyDown(),
+                     isShiftKeyDown())) {
+@@ -229,15 +256,15 @@
+ 
+         @Override
+-        protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
++        public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+             forEach(Clickable.class).mouseClick(new Point(mouseX, mouseY), mouseButton);
+         }
+ 
+         @Override
+-        protected void mouseReleased(int mouseX, int mouseY, int mouseButton) {
++        public void mouseReleased(int mouseX, int mouseY, int mouseButton) {
+             forEach(Draggable.class).mouseRelease(new Point(mouseX, mouseY), mouseButton);
+         }
+ 
+         @Override
+-        protected void mouseClickMove(int mouseX, int mouseY, int mouseButton, long timeSinceLastClick) {
++        public void mouseClickMove(int mouseX, int mouseY, int mouseButton, long timeSinceLastClick) {
+             forEach(Draggable.class).mouseDrag(new Point(mouseX, mouseY), mouseButton, timeSinceLastClick);
+         }
+@@ -249,5 +276,5 @@
+ 
+         @Override
+-        public void handleMouseInput() throws IOException {
++        public void handleMouseInput() {
+             super.handleMouseInput();
+             if (Mouse.hasWheel() && Mouse.getEventDWheel() != 0) {

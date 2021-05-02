@@ -1,0 +1,22 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/extras/youtube/YoutubeUpload.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/extras/youtube/YoutubeUpload.java
+@@ -4,5 +4,7 @@
+ 
+ import com.moonsworth.lunar.client.event.annotation.Listen;
++import com.moonsworth.lunar.client.event.impl.EventState;
+ import com.moonsworth.lunar.client.event.impl.gui.EventGuiScreen;
++import com.moonsworth.lunar.client.event.impl.gui.EventInitGui;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.ReplayMod;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.extras.Extra;
+@@ -19,6 +21,9 @@
+ 
+     @Listen
+-    public void onGuiOpen(EventGuiScreen.InitGuiEvent.Post event) {
+-        net.minecraft.client.gui.GuiScreen vanillaGui = getGui(event);
++    public void onGuiOpen(EventInitGui event) {
++        if (event.getState() != EventState.POST) {
++            return;
++        }
++        net.minecraft.client.gui.GuiScreen vanillaGui = (net.minecraft.client.gui.GuiScreen) event.getScreen();
+         if (GuiScreen.from(vanillaGui) instanceof GuiRenderingDone) {
+             GuiRenderingDone gui = (GuiRenderingDone) GuiScreen.from(vanillaGui);

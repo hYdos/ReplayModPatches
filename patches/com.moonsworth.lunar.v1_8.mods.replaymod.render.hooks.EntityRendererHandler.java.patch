@@ -1,0 +1,26 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/hooks/EntityRendererHandler.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/hooks/EntityRendererHandler.java
+@@ -1,6 +1,8 @@
+ package com.moonsworth.lunar.v1_8.mods.replaymod.render.hooks;
+ 
++import com.moonsworth.lunar.client.event.EventBus;
++import com.moonsworth.lunar.client.event.impl.EventState;
++import com.moonsworth.lunar.client.event.impl.world.EventRenderTick;
+ import net.minecraft.client.Minecraft;
+-import com.moonsworth.lunar.todo.FMLCommonHandler;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.core.versions.MCVer;
+ import com.moonsworth.lunar.v1_8.mods.replaymod.minecraft.gui.utils.EventRegistrations;
+@@ -37,5 +39,5 @@
+ 
+     public void renderWorld(float partialTicks, long finishTimeNano) {
+-        FMLCommonHandler.instance().onRenderTickStart(partialTicks);
++        EventBus.getBus().post(new EventRenderTick(EventState.PRE, partialTicks));
+ 
+         if (mc.theWorld != null && mc.thePlayer != null) {
+@@ -43,5 +45,5 @@
+         }
+ 
+-        FMLCommonHandler.instance().onRenderTickEnd(partialTicks);
++        EventBus.getBus().post(new EventRenderTick(EventState.POST, partialTicks));
+     }
+ 

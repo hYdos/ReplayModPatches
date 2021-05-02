@@ -1,0 +1,29 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/mixin/core/MinecraftMixin_ReplayMod.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/mixin/core/MinecraftMixin_ReplayMod.java
+@@ -2,4 +2,5 @@
+ 
+ import net.minecraft.client.Minecraft;
++import net.minecraft.client.renderer.texture.TextureManager;
+ import org.spongepowered.asm.mixin.Mixin;
+ import org.spongepowered.asm.mixin.Shadow;
+@@ -29,4 +30,20 @@
+             ci.cancel();
+     }
++
++    @Redirect(
++            method = "runTick",
++            at = @At(
++                    value = "INVOKE",
++                    target = "Lnet/minecraft/client/renderer/texture/TextureManager;tick()V"
++            )
++    )
++    public void impl$doubleTickTexture(TextureManager textureManager) {
++        if (earlyReturn) {
++            return;
++        }
++        textureManager.tick();
++    }
++
++
+     @Redirect(method = "runTick", at = @At(value = "INVOKE", target = "Lorg/lwjgl/input/Mouse;getEventDWheel()I", remap = false))
+     private int scroll() {

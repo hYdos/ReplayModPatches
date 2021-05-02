@@ -1,0 +1,9 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/render/metadata/MetadataInjector.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/render/metadata/MetadataInjector.java
+@@ -16,6 +16,4 @@
+ import static com.moonsworth.lunar.v1_8.mods.replaymod.render.ReplayModRender.LOGGER;
+ 
+-import Box;
+-
+ public class MetadataInjector {
+ 

@@ -1,0 +1,58 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/replay/ReplayHandler.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/replay/ReplayHandler.java
+@@ -5,6 +5,4 @@
+ import com.google.common.util.concurrent.Futures;
+ import com.google.common.util.concurrent.ListenableFuture;
+-import com.replaymod.core.mixin.MinecraftAccessor;
+-import com.replaymod.core.mixin.TimerAccessor;
+ import com.replaymod.replaystudio.data.Marker;
+ import com.replaymod.replaystudio.replay.ReplayFile;
+@@ -23,5 +21,4 @@
+ import java.util.*;
+ 
+-import com.replaymod.replay.mixin.EntityOtherPlayerMPAccessor;
+ import net.minecraft.client.entity.EntityOtherPlayerMP;
+ import net.minecraft.client.gui.ScaledResolution;
+@@ -154,6 +151,5 @@
+         }
+ 
+-        TimerAccessor timer = (TimerAccessor) ((MinecraftAccessor) mc).getTimer();
+-        timer.setTimerSpeed(1);
++        mc.timer.timerSpeed = 1;
+         overlay.setVisible(false);
+ 
+@@ -308,4 +304,8 @@
+         }
+ 
++        if (fullReplaySender.replayLength == targetTime) {
++            return;
++        }
++
+         if (targetTime < replaySender.currentTimeStamp()) {
+             mc.displayGuiScreen(null);
+@@ -375,9 +375,9 @@
+                     entity.prevRotationPitch = entity.rotationPitch;
+                 }
+-                try {
++//                try {
+                     mc.runTick();
+-                } catch (IOException e) {
+-                    e.printStackTrace(); // This should never be thrown but whatever
+-                }
++//                } catch (IOException e) {
++//                    e.printStackTrace(); // This should never be thrown but whatever
++//                }
+ 
+                 //finally, updating the camera's position (which is not done by the sync jumping)
+@@ -393,8 +393,7 @@
+         if (entity instanceof EntityOtherPlayerMP) {
+             EntityOtherPlayerMP e = (EntityOtherPlayerMP) entity;
+-            EntityOtherPlayerMPAccessor ea = (EntityOtherPlayerMPAccessor) e;
+-            e.setPosition(ea.getOtherPlayerMPX(), ea.getOtherPlayerMPY(), ea.getOtherPlayerMPZ());
+-            e.rotationYaw = (float) ea.getOtherPlayerMPYaw();
+-            e.rotationPitch = (float) ea.getOtherPlayerMPPitch();
++            e.setPosition(e.otherPlayerMPX, e.otherPlayerMPY, e.otherPlayerMPZ);
++            e.rotationYaw = (float) e.otherPlayerMPYaw;
++            e.rotationPitch = (float) e.otherPlayerMPPitch;
+         }
+     }

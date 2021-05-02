@@ -1,0 +1,9 @@
+--- com/moonsworth/lunar/v1_8/mods/replaymod/core/gui/RestoreReplayGui.java
++++ com/moonsworth/lunar/v1_8/mods/replaymod/core/gui/RestoreReplayGui.java
+@@ -101,5 +101,5 @@
+                 LOGGER.error("Recovering replay file:", e);
+                 CrashReport crashReport = CrashReport.makeCrashReport(e, "Recovering replay file");
+-                core.runLater(() -> Utils.error(LOGGER, VanillaGuiScreen.wrap(getMinecraft().currentScreen),
++                core.runLater(() -> Utils.error(LOGGER, GuiScreen.wrap(getMinecraft().currentScreen),
+                         crashReport, () -> {
+                         }));
